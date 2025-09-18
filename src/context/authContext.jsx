@@ -12,20 +12,44 @@ export function AuthProvider({ children }) {
     else localStorage.removeItem('accessToken')
   }, [token])
 
-  async function login(email, password) {
-    const { data } = await api.post('/auth/login', { email, password })
-    setToken(data?.token)
-    setUser(data?.user || { email })
+  async function signup({ email, password, username }) {
+    const { data } = await api.post(
+      '/auth/signup',
+      { email, password, username },
+      { withCredentials: true }
+    )
+
+    if (data?.accessToken) {
+      setToken(data.accessToken)
+      localStorage.setItem('accessToken', data.accessToken)
+    }
+    if (data?.user) setUser(data.user)
+
     return data
   }
 
+  async function login(email, password) {
+    const { data } = await api.post(
+      '/auth/login',
+      { email, password },
+      { withCredentials: true }
+    )
+
+    if (data?.accessToken) {
+      setToken(data.accessToken)
+      localStorage.setItem('accessToken', data.accessToken)
+    }
+    if (data?.user) setUser(data.user)
+
+    return data
+  }
   function logout() {
     setToken(null)
     setUser(null)
   }
 
   return (
-    <AuthCtx.Provider value={{ user, token, login, logout }}>
+    <AuthCtx.Provider value={{ user, token, signup, login, logout }}>
       {children}
     </AuthCtx.Provider>
   )
@@ -34,3 +58,4 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthCtx)
 }
+
