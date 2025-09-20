@@ -1,6 +1,10 @@
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/authContext.jsx'
 
 export default function Navbar() {
+  const { user, logout } = useAuth()
+  const navigate = useNavigate()
+
   return (
     <nav className="navbar navbar-expand-lg bg-white border-bottom">
       <div className="container">
@@ -17,10 +21,28 @@ export default function Navbar() {
             </li>
           </ul>
 
-          <div className="d-flex gap-2">
-            <NavLink className="btn btn-outline-primary" to="/login">Log in</NavLink>
-            <NavLink className="btn btn-primary" to="/signup">Sign up</NavLink>
-          </div>
+          {!user ? (
+            <div className="d-flex gap-2">
+              <NavLink className="btn btn-outline-primary" to="/login">Log in</NavLink>
+              <NavLink className="btn btn-primary" to="/signup">Sign up</NavLink>
+            </div>
+          ) : (
+            <div className="dropdown">
+              <button className="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                {user.name || user.username || user.email}
+              </button>
+              <ul className="dropdown-menu dropdown-menu-end">
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => { logout(); navigate('/'); }}
+                  >
+                    Log out
+                  </button>
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
       </div>
     </nav>

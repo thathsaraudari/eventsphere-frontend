@@ -12,44 +12,80 @@ export function AuthProvider({ children }) {
     else localStorage.removeItem('accessToken')
   }, [token])
 
-  async function signup({ email, password, username }) {
-    const { data } = await api.post(
-      '/auth/signup',
-      { email, password, username },
-      { withCredentials: true }
-    )
-
-    if (data?.accessToken) {
-      setToken(data.accessToken)
-      localStorage.setItem('accessToken', data.accessToken)
+  useEffect(() => {
+    async function restore() {
+      const t = localStorage.getItem('accessToken')
+      if (!t) return
+      try {
+        const { data } = await api.get('/auth/verify')
+        if (data?.valid) {
+          setUser(data.user)
+          setToken(t)
+        }
+      } catch {
+        setToken(null)
+        setUser(null)
+      }
     }
-    if (data?.user) setUser(data.user)
+    restore()
+  }, [])
 
-    return data
+  function pickToken(payload) {
+    return (
+      payload?.accessToken ??
+      payload?.token ??
+      payload?.jwt ??
+      payload?.access_token ??
+      null
+    )
   }
 
   async function login(email, password) {
     const { data } = await api.post(
       '/auth/login',
       { email, password },
-      { withCredentials: true }
+      { withCredentials: true } 
     )
-
-    if (data?.accessToken) {
-      setToken(data.accessToken)
-      localStorage.setItem('accessToken', data.accessToken)
+    const t = pickToken(data)
+    if (t) {
+      setToken(t)
+      localStorage.setItem('accessToken', t)
     }
-    if (data?.user) setUser(data.user)
+    setUser(data?.user || { email })
 
     return data
   }
+
+  async function signup({ email, password, username, name }) {
+    const displayName = name || username || ''
+    const { data } = await api.post(
+      '/auth/signup',
+      { email, password, name: displayName },
+      { withCredentials: true }
+    )
+
+    const t = pickToken(data)
+    if (t) {
+      setToken(t)
+      localStorage.setItem('accessToken', t)
+      setUser(data?.user || { email, name: displayName })
+      return data
+    }
+
+    try {
+      await login(email, password)
+    } catch {
+    }
+    return data
+  }
+
   function logout() {
     setToken(null)
     setUser(null)
   }
 
   return (
-    <AuthCtx.Provider value={{ user, token, signup, login, logout }}>
+    <AuthCtx.Provider value={{ user, token, login, signup, logout }}>
       {children}
     </AuthCtx.Provider>
   )
@@ -58,4 +94,3 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthCtx)
 }
-
