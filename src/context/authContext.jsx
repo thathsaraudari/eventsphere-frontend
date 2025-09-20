@@ -48,24 +48,6 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  useEffect(() => {
-    async function restore() {
-      const t = localStorage.getItem('accessToken')
-      if (!t) return
-      try {
-        const { data } = await api.get('/auth/verify') 
-        if (data?.valid) {
-          setUser(data.user)
-          setToken(t)
-        }
-      } catch {
-        setToken(null)
-        setUser(null)
-      }
-    }
-    restore()
-  }, [])
-
   return (
     <AuthCtx.Provider value={{ user, token, signup, login, logout }}>
       {children}
@@ -76,4 +58,3 @@ export function AuthProvider({ children }) {
 export function useAuth() {
   return useContext(AuthCtx)
 }
-
