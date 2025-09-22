@@ -14,6 +14,7 @@ export default function App() {
         <Route path="/events" element={<EventsList />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/events" element={<EventsList />} />
       </Routes>
     </>
   )
