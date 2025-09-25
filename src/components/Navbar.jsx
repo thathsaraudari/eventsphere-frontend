@@ -33,6 +33,22 @@ export default function Navbar() {
                 <li>
                   <button
                     className="dropdown-item"
+                    onClick={() => { navigate('/profile'); }}
+                  >
+                    Profile
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
+                    onClick={() => { navigate('/'); }}
+                  >
+                    My Events
+                  </button>
+                </li>
+                <li>
+                  <button
+                    className="dropdown-item"
                     onClick={() => { logout(); navigate('/'); }}
                   >
                     Log out
