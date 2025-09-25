@@ -16,9 +16,7 @@ export default function Navbar() {
 
         <div className="collapse navbar-collapse" id="mainNav">
           <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/events">Events</NavLink>
-            </li>
+            
           </ul>
 
           {!user ? (

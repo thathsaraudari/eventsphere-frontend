@@ -1,20 +1,21 @@
 import { Routes, Route } from 'react-router-dom'
-import Navbar from './components/Navbar.jsx'
+import Navbar from './components/navbar.jsx'
 import Home from './pages/Home.jsx'
 import EventsList from './pages/EventsList.jsx'
 import Login from './pages/Login.jsx'
 import Signup from './pages/Signup.jsx'
+import EventDetail from './pages/EventDetail.jsx'
 
 export default function App() {
   return (
     <>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Home />} />
         <Route path="/events" element={<EventsList />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/events" element={<EventsList />} />
+        <Route path="/" element={<EventsList />} />
+        <Route path="/events/:id" element={<EventDetail />} />
       </Routes>
     </>
   )
