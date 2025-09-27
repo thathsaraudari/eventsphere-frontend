@@ -7,6 +7,7 @@ import Signup from './pages/Signup.jsx'
 import EventDetail from './pages/EventDetail.jsx'
 import Profile from './pages/Profile.jsx'
 import MyEvents from './pages/MyEvents.jsx'
+import CreateEvent from './pages/CreateEvent.jsx'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
         <Route path="/events/:id" element={<EventDetail />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/myevents" element={<MyEvents />} />
+        <Route path="/events/new" element={<CreateEvent />} />
       </Routes>
     </>
   )
