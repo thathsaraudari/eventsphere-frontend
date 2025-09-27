@@ -9,25 +9,34 @@ export default function MyEvents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rsvps, setRsvps] = useState([]); 
+  const [hosted, setHosted] = useState([]);
 
   useEffect(() => {
     let ignore = false;
 
-    async function load() {
+    async function loadMyEvents() {
       try {
         setLoading(true);
         setError("");
-        
-        const { data } = await api.get("/api/my-events/attending");
-        if (!ignore) setRsvps(Array.isArray(data) ? data : []);
+        const endpoint = activeTab === "hosting" ? "/api/my-events/hosting" : "/api/my-events/attending";
+        const { data } = await api.get(endpoint);
+        if (ignore) return;
+        if (activeTab === "hosting") {
+          setHosted(Array.isArray(data) ? data : []);
+        } else {
+          setRsvps(Array.isArray(data) ? data : []);
+        }
       } catch (e) {
-        if (!ignore) setError(e.message || "Failed to load attending events");
+        if (!ignore) {
+          const baseMsg = activeTab === "hosting" ? "Failed to load hosted events" : "Failed to load attending events";
+          setError(e?.response?.data?.message || e.message || baseMsg);
+        }
       } finally {
         if (!ignore) setLoading(false);
       }
     }
 
-    load();
+    loadMyEvents();
     return () => { ignore = true; };
   }, [activeTab]);
 
@@ -167,25 +176,106 @@ export default function MyEvents() {
         )}
 
         {activeTab === "hosting" && (
-          <section
+           <section
             role="tabpanel"
-            id="panel-hosting"
-            aria-labelledby="tab-hosting"
+            id="panel-attending"
+            aria-labelledby="tab-attending"
             className={styles.panel}
           >
-            <div className={styles.emptyState}>
-              <div className={styles.emptyIcon}>🎤</div>
-              <h2 className={styles.emptyTitle}>No hosted events yet</h2>
-              <p className={styles.emptyText}>
-                Create an event and it will show up here.
-              </p>
-            </div>
 
-            <div className={styles.grid}>
-              <div className={styles.cardSkeleton} />
-              <div className={styles.cardSkeleton} />
-              <div className={styles.cardSkeleton} />
-            </div>
+            {error && (
+              <div className={styles.alert}>
+                <strong>Couldn’t load events.</strong>
+                <div className={styles.alertMsg}>{error}</div>
+              </div>
+            )}
+
+            {loading && (
+              <div className={styles.grid}>
+                <div className={styles.cardSkeleton} />
+                <div className={styles.cardSkeleton} />
+                <div className={styles.cardSkeleton} />
+              </div>
+            )}
+
+            {!loading && !error && hosted.length === 0 && (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>📅</div>
+                <h2 className={styles.emptyTitle}>No hosted events yet</h2>
+                <p className={styles.emptyText}>
+                  When you Host to an event, it will appear here.
+                </p>
+              </div>
+            )}
+
+            {!loading && !error && hosted.length > 0 && (
+              <div className={styles.grid}>
+                {hosted.map((h) => {
+                  const ev = h;
+                  if (!ev) return null;
+                  return (
+                    <article key={h._id} className={styles.card}>
+                      <div className={styles.mediaWrap}>
+                        <img
+                          src={ev.coverUrl}
+                          alt={ev.title}
+                          className={styles.cover}
+                          loading="lazy"
+                        />
+                        <span className={styles.badge}>
+                          {ev.eventMode === "Inperson" ? "In person" : "Online"}
+                        </span>
+                      </div>
+
+                      <div className={styles.content}>
+                        <h3 className={styles.cardTitle}>
+                          <Link to={`/events/${ev._id}`} className={styles.titleLink}>
+                            {ev.title}
+                          </Link>
+                        </h3>
+
+                        <div className={styles.meta}>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>When</span>
+                            <span className={styles.metaVal}>{formatDateRange(ev.startAt, ev.endAt)}</span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>Where</span>
+                            <span className={styles.metaVal}>
+                              {ev?.location?.city || "—"}
+                              {ev?.location?.country ? `, ${ev.location.country}` : ""}
+                            </span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>Price</span>
+                            <span className={styles.metaVal}>{formatPrice(ev.price)}</span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>Seats</span>
+                            <span className={styles.metaVal}>
+                              {ev?.capacity?.seatsRemaining ?? "—"} left / {ev?.capacity?.number ?? "—"} total
+                            </span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>RSVP</span>
+                            <span className={`${styles.status} ${styles[`status_${h.status}`]}`}>{h.status}</span>
+                          </div>
+                        </div>
+
+                        <div className={styles.actions}>
+                          <Link to={`/events/${ev._id}`} className={styles.btnPrimary}>
+                            View details
+                          </Link>
+                          <span className={styles.attendLabel}>
+                            {ev.eventMode === "Inperson" ? "Attend in person" : "Attend online"}
+                          </span>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
           </section>
         )}
       </div>
