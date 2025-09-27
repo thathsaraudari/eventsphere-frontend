@@ -178,8 +178,8 @@ export default function MyEvents() {
         {activeTab === "hosting" && (
            <section
             role="tabpanel"
-            id="panel-attending"
-            aria-labelledby="tab-attending"
+            id="panel-hosting"
+            aria-labelledby="tab-hosting"
             className={styles.panel}
           >
             <div className={styles.actions} style={{ justifyContent: 'flex-end', marginBottom: 12 }}>
@@ -269,8 +269,8 @@ export default function MyEvents() {
                         </div>
 
                         <div className={styles.actions}>
-                          <Link to={`/events/${ev._id}`} className={styles.btnPrimary}>
-                            View details
+                          <Link to={`/events/${ev._id}/edit`} className={styles.btnPrimary}>
+                            Edit event
                           </Link>
                           <span className={styles.attendLabel}>
                             {ev.eventMode === "Inperson" ? "Attend in person" : "Attend online"}
