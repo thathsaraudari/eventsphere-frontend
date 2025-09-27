@@ -182,6 +182,9 @@ export default function MyEvents() {
             aria-labelledby="tab-attending"
             className={styles.panel}
           >
+            <div className={styles.actions} style={{ justifyContent: 'flex-end', marginBottom: 12 }}>
+              <Link to="/events/new" className={styles.btnPrimary}>Create event</Link>
+            </div>
 
             {error && (
               <div className={styles.alert}>
@@ -203,8 +206,11 @@ export default function MyEvents() {
                 <div className={styles.emptyIcon}>📅</div>
                 <h2 className={styles.emptyTitle}>No hosted events yet</h2>
                 <p className={styles.emptyText}>
-                  When you Host to an event, it will appear here.
+                  Create an event and it will appear here.
                 </p>
+                <div style={{ marginTop: 12 }}>
+                  <Link to="/events/new" className={styles.btnPrimary}>Create your first event</Link>
+                </div>
               </div>
             )}
 
