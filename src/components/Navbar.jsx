@@ -41,7 +41,7 @@ export default function Navbar() {
                 <li>
                   <button
                     className="dropdown-item"
-                    onClick={() => { navigate('/'); }}
+                    onClick={() => { navigate('/myevents'); }}
                   >
                     My Events
                   </button>
