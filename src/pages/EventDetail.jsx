@@ -1,36 +1,87 @@
 // src/pages/EventDetail.jsx
-import { useParams, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import api from '../api/client.js'
+import { useAuth } from '../context/authContext.jsx'
 
-import { formatDateRange, formatPrice, addressText, mapLink } from '../utils/eventHelpers';
-import styles from '../pages/css/EventDetails.module.css';
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5005/api';
-
+import { formatDateRange, formatPrice, addressText, mapLink } from '../utils/eventHelpers'
+import styles from '../pages/css/EventDetails.module.css'
 
 export default function EventDetail() {
-  const { id } = useParams();
-  const [event, setEvent] = useState(null);
-  const [status, setStatus] = useState('loading');
-  const [error, setError] = useState('');
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { token } = useAuth()
+
+  const [event, setEvent] = useState(null)
+  const [status, setStatus] = useState('loading') // loading | done | error
+  const [error, setError] = useState('')
+
+  const [isRsvped, setIsRsvped] = useState(false)
+  const [rsvpLoading, setRsvpLoading] = useState(false)
+  const [rsvpError, setRsvpError] = useState('')
 
   useEffect(() => {
+    let ignore = false
     async function fetchEvent() {
-      setStatus('loading');
-      setError('');
+      setStatus('loading')
+      setError('')
       try {
-        const { data } = await axios.get(`${API_BASE}/events/${id}`, { withCredentials: true });
-          setEvent(data);
-          setStatus('done');
-      } catch (err) {
-        const msgMessage = 'Could not load event';
-        setError(msgMessage);
-        setStatus('error');
+        const { data } = await api.get(`/api/events/${id}`)
+        if (ignore) return
+        setEvent(data)
+        setStatus('done')
+      } catch (e) {
+        if (ignore) return
+        setError('Could not load event')
+        setStatus('error')
       }
     }
-    fetchEvent();
-  }, [id]);
+    fetchEvent()
+    return () => { ignore = true }
+  }, [id])
+
+  useEffect(() => {
+    let ignore = false
+    async function checkRsvp() {
+      if (!token || !id) return
+      try {
+        const { data } = await api.get(`/api/my-events/attending/${id}`)
+        if (ignore) return
+        setIsRsvped(data?.status === 'reserved')
+      } catch {
+        console.log('Could not fetch RSVP status')
+      }
+    }
+    checkRsvp()
+    return () => { ignore = true }
+  }, [token, id])
+
+  const seatsLeft = event?.capacity?.seatsRemaining ?? null
+
+  async function handleToggleRsvp() {
+    if (!token) {
+      return navigate('/login', { replace: true, state: { from: location } })
+    }
+    if (!id) return
+    setRsvpError('')
+    setRsvpLoading(true)
+    try {
+      const { data } = await api.post(`/api/my-events/attending/${id}/rsvp/toggle`);
+      if(data?.success) {
+        setIsRsvped(data.status === 'reserved')
+        // Update seats remaining in UI
+        event.capacity.seatsRemaining = data.seatsRemaining
+        setEvent({ ...event })
+      } else {
+        setRsvpError('Failed to update RSVP')
+      }
+    } catch (e) {
+      setRsvpError(e?.response?.data?.message || e.message || 'Failed to update RSVP')
+    } finally {
+      setRsvpLoading(false)
+    }
+  }
 
   if (status === 'loading') {
     return (
@@ -50,15 +101,15 @@ export default function EventDetail() {
         <h1 style={{ marginTop: 12 }}>Event not available</h1>
         <p style={{ color: 'crimson' }}>{error}</p>
       </div>
-    );
+    )
   }
 
-  const dateLine = formatDateRange(event.startAt, event.endAt);
-  const price = formatPrice(event.price);
-  const addr = addressText(event.location);
-  const mapsUrl = mapLink(event.location);
-  const capacity = event.capacity.number;
-  const left = event.capacity.seatsRemaining;
+  const dateLine = formatDateRange(event.startAt, event.endAt)
+  const price = formatPrice(event.price)
+  const addr = addressText(event.location)
+  const mapsUrl = mapLink(event.location)
+  const capacity = event.capacity.number
+  const left = event.capacity.seatsRemaining
 
   return (
   <div className={styles.eventPage}>
@@ -112,19 +163,39 @@ export default function EventDetail() {
               </div>
 
               <div><strong>{price}</strong></div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <div>
+                  <span style={{ color: '#6b7280' }}>Total capacity: </span>
+                  <strong>{event.capacity.number}</strong>
+                </div>
+                <div>
+                  <span style={{ color: '#6b7280' }}>Seats remaining: </span>
+                  <strong>{seatsLeft}</strong>
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: 8 }}>
-              
-              <label className={styles.btnPrimary}>
-                {event.eventMode === 'Inperson' ? 'Attend in person' : 'Attend online'}
-              </label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {rsvpError && (
+                  <div style={{ color: 'crimson', fontSize: 14 }}>{rsvpError}</div>
+                )}
+                <button
+                  className={isRsvped ? styles.btnGhost : styles.btnPrimary}
+                  onClick={handleToggleRsvp}
+                  disabled={rsvpLoading || (!isRsvped && (typeof seatsLeft === 'number' && seatsLeft <= 0))}
+                  type="button"
+                >
+                  {rsvpLoading
+                    ? (isRsvped ? 'Updating…' : 'Submitting…')
+                    : (isRsvped ? 'Cancel RSVP' : 'RSVP to Event')}
+                </button>
+              </div>
             </div>
-          </div>
-        </aside>
+          </aside>
+        </div>
       </div>
-    </div>
 
-  </div>
-);
+    </div>
+  )
 }
