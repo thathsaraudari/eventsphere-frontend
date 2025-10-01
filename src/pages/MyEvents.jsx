@@ -1,15 +1,21 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./css/MyEvents.module.css";
 import api from "../api/client.js";
 import { formatDateRange, formatPrice } from '../utils/eventHelpers';
 
 export default function MyEvents() {
-  const [activeTab, setActiveTab] = useState("attending"); 
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(() => {
+    const t = (searchParams.get('tab') || '').toLowerCase();
+    return t === 'hosting' ? 'hosting' : 'attending';
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [rsvps, setRsvps] = useState([]); 
   const [hosted, setHosted] = useState([]);
+  const [cancelingIds, setCancelingIds] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     let ignore = false;
@@ -40,10 +46,41 @@ export default function MyEvents() {
     return () => { ignore = true; };
   }, [activeTab]);
 
+  useEffect(() => {
+    const t = (searchParams.get('tab') || '').toLowerCase();
+    const next = t === 'hosting' ? 'hosting' : 'attending';
+    if (next !== activeTab) setActiveTab(next);
+  }, [searchParams]);
+
+  // Reflect current tab selection in the URL
+  useEffect(() => {
+    const cur = (searchParams.get('tab') || '').toLowerCase();
+    if (cur !== activeTab) {
+      const next = new URLSearchParams(searchParams);
+      next.set('tab', activeTab);
+      setSearchParams(next, { replace: true });
+    }
+  }, [activeTab, searchParams, setSearchParams]);
+
+  async function handleCancelRsvp(eventId) {
+    if (!eventId) return;
+    setCancelingIds((prev) => ({ ...prev, [eventId]: true }));
+    try {
+      const { data } = await api.post(`/api/my-events/attending/${eventId}/rsvp/toggle`);
+      if (data?.success) {
+        setRsvps((prev) => prev.filter((r) => r?.eventId?._id !== eventId));
+      }
+    } catch (e) {
+      console.error('Failed to cancel RSVP', e);
+    } finally {
+      setCancelingIds((prev) => ({ ...prev, [eventId]: false }));
+    }
+  }
+
   return (
     <div className={styles.container}>
       <div className="d-flex align-items-center justify-content-between" style={{ gap: 12, marginBottom: 12 }}>
-        <h1 className={styles.title}>My Events</h1>
+        <h2 className={styles.title}>My Events</h2>
         <Link to="/events/new" className="btn btn-primary">Create event</Link>
       </div>
 
@@ -113,7 +150,14 @@ export default function MyEvents() {
                   const ev = r.eventId;
                   if (!ev) return null;
                   return (
-                    <article key={r._id} className={styles.card}>
+                    <article
+                      key={r._id}
+                      className={styles.card}
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => navigate(`/events/${ev._id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className={styles.mediaWrap}>
                         <img
                           src={ev.coverUrl}
@@ -162,12 +206,14 @@ export default function MyEvents() {
                         </div>
 
                         <div className={styles.actions}>
-                          <Link to={`/events/${ev._id}`} className={styles.btnPrimary}>
-                            View details
-                          </Link>
-                          <span className={styles.attendLabel}>
-                            {ev.eventMode === "Inperson" ? "Attend in person" : "Attend online"}
-                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-outline-primary"
+                            onClick={(e) => { e.stopPropagation(); handleCancelRsvp(ev._id); }}
+                            disabled={!!cancelingIds[ev._id]}
+                          >
+                            {cancelingIds[ev._id] ? 'Cancelling...' : 'Cancel RSVP'}
+                          </button>
                         </div>
                       </div>
                     </article>
@@ -220,7 +266,14 @@ export default function MyEvents() {
                   const ev = h;
                   if (!ev) return null;
                   return (
-                    <article key={h._id} className={styles.card}>
+                    <article
+                      key={h._id}
+                      className={styles.card}
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => navigate(`/events/${ev._id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
                       <div className={styles.mediaWrap}>
                         <img
                           src={ev.coverUrl}
@@ -235,9 +288,7 @@ export default function MyEvents() {
 
                       <div className={styles.content}>
                         <h3 className={styles.cardTitle}>
-                          <Link to={`/events/${ev._id}`} className={styles.titleLink}>
-                            {ev.title}
-                          </Link>
+                          {ev.title}
                         </h3>
 
                         <div className={styles.meta}>
@@ -262,19 +313,16 @@ export default function MyEvents() {
                               {ev?.capacity?.seatsRemaining ?? "—"} left / {ev?.capacity?.number ?? "—"} total
                             </span>
                           </div>
-                          <div className={styles.metaRow}>
-                            <span className={styles.metaKey}>RSVP</span>
-                            <span className={`${styles.status} ${styles[`status_${h.status}`]}`}>{h.status}</span>
-                          </div>
                         </div>
 
                         <div className={styles.actions}>
-                          <Link to={`/events/${ev._id}/edit`} className={styles.btnPrimary}>
+                          <Link
+                            to={`/events/${ev._id}/edit`}
+                            className="btn btn-outline-primary"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             Edit event
                           </Link>
-                          <span className={styles.attendLabel}>
-                            {ev.eventMode === "Inperson" ? "Attend in person" : "Attend online"}
-                          </span>
                         </div>
                       </div>
                     </article>

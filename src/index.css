@@ -11,6 +11,11 @@
   --bs-pagination-border-radius: 16px;
 }
 
+html { scrollbar-gutter: stable; }
+@supports not (scrollbar-gutter: stable) {
+  html { overflow-y: scroll; }
+}
+
 html, body {
   background-color: var(--page-bg);
   min-height: 100%;
