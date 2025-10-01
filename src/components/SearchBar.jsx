@@ -1,42 +1,48 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import styles from './css/SearchBar.module.css'
 
-const CATEGORIES = [
-  'All',
-  'Tech',
-  'Business',
-  'Career & Networking',
-  'Education & Learning',
-  'Language & Culture',
-  'Music',
-  'Movies & Film',
-  'Arts',
-  'Book Clubs',
-  'Dance',
-  'Fitness',
-  'Health & Wellness',
-  'Sports & Recreation',
-  'Outdoors & Adventure',
-  'Games',
-  'Hobbies & Crafts',
-  'Photography',
-  'Food & Drink',
-  'Social',
-  'LGBTQ+',
-  'Parents & Family',
-  'Pets',
-  'Religion & Beliefs',
-  'Sci-Fi & Fantasy',
-  'Writing',
-  'Fashion & Beauty',
-  'Startups & Entrepreneurship',
-  'Support & Community',
-]
+const CATEGORY_LIST = {
+  'All': '✨',
+  'Tech': '💻',
+  'Business': '💼',
+  'Career & Networking': '🤝',
+  'Education & Learning': '📚',
+  'Language & Culture': '🌐',
+  'Music': '🎵',
+  'Movies & Film': '🎬',
+  'Arts': '🎨',
+  'Book Clubs': '📖',
+  'Dance': '💃',
+  'Fitness': '🏋️',
+  'Health & Wellness': '🧘',
+  'Sports & Recreation': '⚽',
+  'Outdoors & Adventure': '🌲',
+  'Games': '🎮',
+  'Hobbies & Crafts': '🧵',
+  'Photography': '📷',
+  'Food & Drink': '🍽️',
+  'Social': '🎉',
+  'LGBTQ+': '🏳️‍🌈',
+  'Parents & Family': '👨‍👩‍👧‍👦',
+  'Pets': '🐾',
+  'Religion & Beliefs': '⛪',
+  'Sci-Fi & Fantasy': '🪐',
+  'Writing': '✍️',
+  'Fashion & Beauty': '👗',
+  'Startups & Entrepreneurship': '🚀',
+  'Support & Community': '🤝',
+}
+
+const CATEGORIES = Object.entries(CATEGORY_LIST).map(([label, icon]) => ({ label, icon: icon || '🔹' }))
 
 export default function SearchBar({ compact = false, initial = {} }) {
   const [q, setQ] = useState(initial.q || '')
   const [postalCode, setPostalCode] = useState(initial.postalCode || '')
   const [searchParams, setSearchParams] = useSearchParams()
+  const catBarRef = useRef(null)
+  const [showRight, setShowRight] = useState(false)
+  const [showLeft, setShowLeft] = useState(false)
 
   const currentCategory = searchParams.get('category') || 'All'
 
@@ -57,9 +63,37 @@ export default function SearchBar({ compact = false, initial = {} }) {
     setSearchParams(next)
   }
 
+  function scrollRight() {
+    if (catBarRef.current) {
+      catBarRef.current.scrollBy({ left: 240, behavior: 'smooth' })
+    }
+  }
+  function scrollLeft() {
+    if (catBarRef.current) {
+      catBarRef.current.scrollBy({ left: -240, behavior: 'smooth' })
+    }
+  }
+
+  useEffect(() => {
+    const el = catBarRef.current
+    if (!el) return
+    const update = () => {
+      const canScroll = el.scrollWidth > el.clientWidth
+      setShowRight(canScroll && el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+      setShowLeft(canScroll && el.scrollLeft > 0)
+    }
+    update()
+    el.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      el.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
+
   return (
     <div className={compact ? '' : 'p-3 bg-white border rounded shadow-sm'}>
-      <form className="row g-2" onSubmit={onSubmit}>
+      <form className="row g-3" onSubmit={onSubmit}>
         <div className="col-12 col-md-6">
           <input className="form-control" placeholder="Search events (e.g. React)" value={q} onChange={e=>setQ(e.target.value)} />
         </div>
@@ -71,21 +105,46 @@ export default function SearchBar({ compact = false, initial = {} }) {
         </div>
       </form>
 
-      <div className="mt-3" style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8 }}>
-        {CATEGORIES.map(cat => {
-          const active = currentCategory === cat
-          return (
+      <div className="mt-4">
+        <div className={styles.catWrap}>
+          {showLeft && (
             <button
-              key={cat}
               type="button"
-              onClick={() => onPickCategory(cat)}
-              className={`btn btn-sm ${active ? 'btn-primary' : 'btn-outline-secondary'}`}
-              style={{ whiteSpace: 'nowrap' }}
+              className={styles.scrollLeft}
+              onClick={scrollLeft}
+              aria-label="Scroll categories left"
             >
-              {cat}
+              ‹
             </button>
-          )
-        })}
+          )}
+          <div ref={catBarRef} className={styles.catBar}>
+          {CATEGORIES.map(({ label, icon }) => {
+            const active = currentCategory === label
+            return (
+              <button
+                key={label}
+                type="button"
+                onClick={() => onPickCategory(label)}
+                className={`${styles.catItem} ${active ? styles.active : ''}`}
+                aria-pressed={active}
+              >
+                <span className={styles.icon} aria-hidden>{icon}</span>
+                <span className={styles.label}>{label}</span>
+              </button>
+            )
+          })}
+          </div>
+          {showRight && (
+            <button
+              type="button"
+              className={styles.scrollRight}
+              onClick={scrollRight}
+              aria-label="Scroll categories right"
+            >
+              ›
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )

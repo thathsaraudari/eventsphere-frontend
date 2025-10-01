@@ -1,0 +1,77 @@
+:root {
+  --page-bg: #f5f6f8; 
+  --brand-primary: #577590;
+  --brand-primary-strong: #4a647c;
+  --brand-primary-rgb: 87, 117, 144;
+  --bs-pagination-active-color: #ffffff;
+  --bs-border-radius: 16px;
+  --bs-border-radius-sm: 16px;
+  --bs-border-radius-lg: 16px;
+  --bs-btn-border-radius: 16px;
+  --bs-pagination-border-radius: 16px;
+}
+
+html, body {
+  background-color: var(--page-bg);
+  min-height: 100%;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.form-control,
+.form-select,
+textarea.form-control {
+  border-radius: 16px !important;
+}
+
+.btn { border-radius: 16px !important; }
+.btn-group .btn { border-radius: 16px !important; }
+.btn-sm, .btn-group-sm > .btn { border-radius: 16px !important; }
+.btn-lg, .btn-group-lg > .btn { border-radius: 16px !important; }
+
+:root {
+  --bs-primary: var(--brand-primary);
+  --bs-primary-rgb: var(--brand-primary-rgb);
+  --bs-link-color: var(--brand-primary);
+  --bs-link-hover-color: var(--brand-primary-strong);
+  --bs-pagination-color: var(--brand-primary);
+  --bs-pagination-hover-color: var(--brand-primary-strong);
+  --bs-pagination-active-bg: var(--brand-primary);
+  --bs-pagination-active-border-color: var(--brand-primary);
+}
+
+.btn-primary {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+}
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--brand-primary-strong) !important;
+  border-color: var(--brand-primary-strong) !important;
+}
+
+.btn-outline-primary {
+  color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+}
+.btn-outline-primary:hover, .btn-outline-primary:focus {
+  background-color: rgba(var(--brand-primary-rgb), 0.08) !important;
+  border-color: var(--brand-primary) !important;
+  color: var(--brand-primary) !important;
+}
+
+.badge.bg-primary, .text-bg-primary {
+  background-color: var(--brand-primary) !important;
+}
+
+.pagination { gap: 6px; }
+.pagination .page-link {
+  color: var(--brand-primary) !important;
+  border-radius: 16px !important;
+}
+.pagination .page-item.active .page-link {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: #ffffff !important;
+}

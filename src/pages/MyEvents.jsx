@@ -42,7 +42,10 @@ export default function MyEvents() {
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>My Events</h1>
+      <div className="d-flex align-items-center justify-content-between" style={{ gap: 12, marginBottom: 12 }}>
+        <h1 className={styles.title}>My Events</h1>
+        <Link to="/events/new" className="btn btn-primary">Create event</Link>
+      </div>
 
       <div className={styles.tabs} role="tablist" aria-label="My events tabs">
         <button
@@ -182,9 +185,6 @@ export default function MyEvents() {
             aria-labelledby="tab-hosting"
             className={styles.panel}
           >
-            <div className={styles.actions} style={{ justifyContent: 'flex-end', marginBottom: 12 }}>
-              <Link to="/events/new" className={styles.btnPrimary}>Create event</Link>
-            </div>
 
             {error && (
               <div className={styles.alert}>

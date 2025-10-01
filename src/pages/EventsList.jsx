@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import api from "../api/client";
 import SearchBar from "../components/SearchBar.jsx";
 import { formatDateRange } from "../utils/eventHelpers";
+import styles from "./css/EventsList.module.css";
 
 export default function EventsList() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -10,6 +11,7 @@ export default function EventsList() {
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   const query = useMemo(() => {
     return {
@@ -59,6 +61,8 @@ export default function EventsList() {
   const pageSize = query.limit;
 
   const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const fromIdx = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
+  const toIdx = Math.min(currentPage * pageSize, totalItems);
 
   function setPage(p) {
     const next = new URLSearchParams(searchParams);
@@ -69,11 +73,19 @@ export default function EventsList() {
 
   return (
     <div className="container py-4">
-      <div className="d-flex align-items-center justify-content-between mb-2">
-        <h1 className="h4 m-0">Events</h1>
+      <div className={styles.pageHead}>
+        <div>
+          <p className={styles.subtitle}>Discover what’s happening around you and online</p>
+        </div>
       </div>
 
       <SearchBar compact initial={{ q: query.q, postalCode: query.postalCode }} />
+
+      {!loading && !error && (
+        <div className={styles.resultInfo}>
+          {totalItems === 0 ? 'No events found' : `Showing ${fromIdx}–${toIdx} of ${totalItems} events`}
+        </div>
+      )}
 
       {error && <div className="alert alert-danger mt-3">{error}</div>}
       {loading && <p className="mt-3">Loading…</p>}
@@ -84,14 +96,17 @@ export default function EventsList() {
           const mode = event.eventMode === "Inperson" ? "In person" : (event.eventMode || "");
           const capTotal = event?.capacity?.number;
           const seatsLeft = event?.capacity?.seatsRemaining;
-          const attendeesNow =
-            (capTotal != null && seatsLeft != null)
-              ? Math.max(0, capTotal - seatsLeft)
-              : (event?.attendeesCount ?? (Array.isArray(event?.attendees) ? event.attendees.length : undefined));
+          const attendeesNow = Math.max(0, capTotal - seatsLeft);
 
           return (
             <div key={event._id || event.id} className="col-12 col-md-6 col-lg-4">
-              <div className="card h-100">
+              <div
+                className={`card h-100 ${styles.cardReset}`}
+                role="link"
+                tabIndex={0}
+                onClick={() => navigate(`/events/${event._id || event.id}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <img
                   src={event.coverUrl || "https://picsum.photos/seed/fallback/800/450"}
                   className="card-img-top"
@@ -115,7 +130,6 @@ export default function EventsList() {
                     </p>
                   )}
                   <p className="card-text flex-grow-1" style={{ whiteSpace: 'pre-wrap' }}>{event.description || ''}</p>
-                  <Link className="btn btn-primary mt-auto" to={`/events/${event._id || event.id}`}>View details</Link>
                 </div>
               </div>
             </div>
