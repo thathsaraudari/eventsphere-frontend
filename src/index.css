@@ -75,3 +75,25 @@ textarea.form-control {
   border-color: var(--brand-primary) !important;
   color: #ffffff !important;
 }
+
+.navbar-brand .brand-logo {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+}
+
+.navbar .navbar-brand {
+  color: var(--brand-primary) !important;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus {
+  color: var(--brand-primary-strong) !important;
+}
+
+.navbar .navbar-brand.brand-xl {
+  font-size: clamp(1.5rem, 2.5vw + 1rem, 2.125rem);
+  line-height: 1;
+}
