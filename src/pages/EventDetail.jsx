@@ -20,6 +20,9 @@ export default function EventDetail() {
   const [isRsvped, setIsRsvped] = useState(false)
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
+  const [isSaved, setIsSaved] = useState(false)
+  const [saveLoading, setSaveLoading] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   useEffect(() => {
     let ignore = false
@@ -57,6 +60,28 @@ export default function EventDetail() {
     return () => { ignore = true }
   }, [token, id])
 
+  useEffect(() => {
+    let ignore = false
+    async function checkSaved() {
+      if (!token || !id) return
+      try {
+        const { data } = await api.get('/api/saved-events/')
+        if (ignore) return
+        const list = data;
+        const exists = list.some((entry) => {
+          const event = entry.eventId;
+          const eventId = event._id;
+          return String(eventId) === String(id)
+        })
+        setIsSaved(exists)
+      } catch {
+        console.log('Could not fetch saved status')
+      }
+    }
+    checkSaved()
+    return () => { ignore = true }
+  }, [token, id])
+
   const seatsLeft = event?.capacity?.seatsRemaining ?? null
 
   async function handleToggleRsvp() {
@@ -80,6 +105,28 @@ export default function EventDetail() {
       setRsvpError(e?.response?.data?.message || e.message || 'Failed to update RSVP')
     } finally {
       setRsvpLoading(false)
+    }
+  }
+
+  async function handleToggleSave() {
+    if (!token) {
+      return navigate('/login', { replace: true, state: { from: location } })
+    }
+    if (!id) return
+    setSaveError('')
+    setSaveLoading(true)
+    try {
+      if (isSaved) {
+        await api.delete(`/api/saved-events/${id}`)
+        setIsSaved(false)
+      } else {
+        await api.post(`/api/saved-events/${id}`)
+        setIsSaved(true)
+      }
+    } catch (e) {
+      setSaveError(e?.response?.data?.message || e.message || 'Failed to update saved events')
+    } finally {
+      setSaveLoading(false)
     }
   }
 
@@ -134,7 +181,22 @@ export default function EventDetail() {
       <div className={styles.grid}>
         <div>
           <div className={styles.card}>
-            <h1 className={styles.title}>{event.title}</h1>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+              <h1 className={styles.title} style={{ margin: 0 }}>{event.title}</h1>
+              <button
+                type="button"
+                onClick={handleToggleSave}
+                aria-label={isSaved ? 'Unsave' : 'Save'}
+                title={isSaved ? 'Unsave' : 'Save'}
+                disabled={saveLoading}
+                style={{ background: 'none', border: 'none', padding: 0, fontSize: 28, lineHeight: 1, color: isSaved ? '#dc3545' : '#6c757d' }}
+              >
+                {saveLoading ? '…' : (isSaved ? '♥' : '♡')}
+              </button>
+            </div>
+            {saveError && (
+              <div style={{ color: 'crimson', fontSize: 14, marginTop: 4 }}>{saveError}</div>
+            )}
             <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{event.description}</p>
           </div>
         </div>
@@ -190,6 +252,7 @@ export default function EventDetail() {
                     ? (isRsvped ? 'Updating…' : 'Submitting…')
                     : (isRsvped ? 'Cancel RSVP' : 'RSVP to Event')}
                 </button>
+
               </div>
             </div>
           </aside>
