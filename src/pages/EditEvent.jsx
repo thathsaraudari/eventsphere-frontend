@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
+import styles from './css/EditEvent.module.css'
 
 export default function EditEvent() {
   const { id } = useParams()
@@ -26,9 +27,10 @@ export default function EditEvent() {
   const [country, setCountry] = useState('')
 
   const [participants, setParticipants] = useState([])
+  const [statusFilter, setStatusFilter] = useState('all')
 
   const CATEGORY_OPTIONS = [
-    'Tech','Business','Career & Networking','Education & Learning','Language & Culture','Music','Movies & Film','Arts','Book Clubs','Dance','Fitness','Health & Wellness','Sports & Recreation','Outdoors & Adventure','Games','Hobbies & Crafts','Photography','Food & Drink','Social','LGBTQ+','Parents & Family','Pets','Religion & Beliefs','Sci‑Fi & Fantasy','Writing','Fashion & Beauty','Startups & Entrepreneurship','Support & Community'
+    'Tech','Business','Career & Networking','Education & Learning','Language & Culture','Music','Movies & Film','Arts','Book Clubs','Dance','Fitness','Health & Wellness','Sports & Recreation','Outdoors & Adventure','Games','Hobbies & Crafts','Photography','Food & Drink','Social','LGBTQ+','Parents & Family','Pets','Religion & Beliefs','Sci-Fi & Fantasy','Writing','Fashion & Beauty','Startups & Entrepreneurship','Support & Community'
   ]
 
   const isOnline = useMemo(() => eventMode !== 'Inperson', [eventMode])
@@ -119,156 +121,194 @@ export default function EditEvent() {
 
   if (status === 'loading') {
     return (
-      <div className="container py-4"><div className="card p-3">Loading…</div></div>
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <div className={styles.card}>Loading...</div>
+        </div>
+      </div>
     )
   }
   if (status === 'error') {
     return (
-      <div className="container py-4">
-        <Link to="/myevents">&larr; Back</Link>
-        <div className="alert alert-danger mt-3">{error}</div>
+      <div className={styles.page}>
+        <div className={styles.container}>
+          <Link to="/myevents" className={styles.backlink}>&larr; Back</Link>
+          <div className={styles.alert} style={{ marginTop: 12 }}>{error}</div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h1 className="h4 m-0">Edit Event</h1>
-        <Link to={`/events/${id}`} className="btn btn-link">Cancel</Link>
-      </div>
+    <div className={styles.page}>
+      <div className={styles.container}>
+        <div className={styles.pageHead}>
+          <h1 className={styles.title}>Edit Event</h1>
+          <Link to={`/events/${id}`} className={styles.backlink}>Cancel</Link>
+        </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+        {error && <div className={styles.alert}>{error}</div>}
 
-      <div className="row g-4">
-        <div className="col-12 col-lg-8">
-          <form onSubmit={onSubmit} className="card p-3">
-            <div className="row g-3">
-              <div className="col-12">
-                <label className="form-label">Title</label>
-                <input className="form-control" value={title} onChange={e => setTitle(e.target.value)} required />
-              </div>
+        <div className={styles.layout}>
+          <div>
+            <form onSubmit={onSubmit} className={`${styles.card} ${styles.form}`}>
+            <div className={styles.row}>
+              <label className={styles.label}>Title</label>
+              <input className={styles.input} value={title} onChange={e => setTitle(e.target.value)} required />
+            </div>
 
-              <div className="col-12">
-                <label className="form-label">Description</label>
-                <textarea className="form-control" rows={6} value={description} onChange={e => setDescription(e.target.value)} />
-              </div>
+            <div className={styles.row}>
+              <label className={styles.label}>Description</label>
+              <textarea className={styles.textarea} value={description} onChange={e => setDescription(e.target.value)} />
+            </div>
 
-              <div className="col-12 col-md-6">
-                <label className="form-label">Mode</label>
-                <select className="form-select" value={eventMode} onChange={e => setEventMode(e.target.value)}>
+            <div className={styles.grid2}>
+              <div className={styles.row}>
+                <label className={styles.label}>Mode</label>
+                <select className={styles.select} value={eventMode} onChange={e => setEventMode(e.target.value)}>
                   <option value="Inperson">In person</option>
                   <option value="Online">Online</option>
                 </select>
               </div>
-
-              <div className="col-12 col-md-6">
-                <label className="form-label">Category</label>
-                <select className="form-select" value={category} onChange={e => setCategory(e.target.value)}>
+              <div className={styles.row}>
+                <label className={styles.label}>Category</label>
+                <select className={styles.select} value={category} onChange={e => setCategory(e.target.value)}>
                   <option value="">Select a category</option>
                   {CATEGORY_OPTIONS.map(opt => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
                 </select>
               </div>
+            </div>
 
-              <div className="col-12 col-md-6">
-                <label className="form-label">Cover Image URL</label>
-                <input className="form-control" value={coverUrl} onChange={e => setCoverUrl(e.target.value)} placeholder="https://..." />
-              </div>
+            <div className={styles.row}>
+              <label className={styles.label}>Cover Image URL</label>
+              <input className={styles.input} value={coverUrl} onChange={e => setCoverUrl(e.target.value)} placeholder="https://..." />
+            </div>
 
-              <div className="col-12 col-md-6">
-                <label className="form-label">Starts at</label>
-                <input type="datetime-local" className="form-control" value={startAt} onChange={e => setStartAt(e.target.value)} required />
+            <div className={styles.grid2}>
+              <div className={styles.row}>
+                <label className={styles.label}>Starts at</label>
+                <input type="datetime-local" className={styles.input} value={startAt} onChange={e => setStartAt(e.target.value)} required />
               </div>
-              <div className="col-12 col-md-6">
-                <label className="form-label">Ends at</label>
-                <input type="datetime-local" className="form-control" value={endAt} onChange={e => setEndAt(e.target.value)} required />
+              <div className={styles.row}>
+                <label className={styles.label}>Ends at</label>
+                <input type="datetime-local" className={styles.input} value={endAt} onChange={e => setEndAt(e.target.value)} required />
               </div>
+            </div>
 
-              <div className="col-12 col-md-4">
-                <label className="form-label">Price amount</label>
-                <input type="number" min="0" step="0.01" className="form-control" value={priceAmount} onChange={e => setPriceAmount(e.target.value)} />
+            <div className={styles.grid3}>
+              <div className={styles.row}>
+                <label className={styles.label}>Price amount</label>
+                <input type="number" min="0" step="0.01" className={styles.input} value={priceAmount} onChange={e => setPriceAmount(e.target.value)} />
               </div>
-              <div className="col-12 col-md-2">
-                <label className="form-label">Currency</label>
-                <select className="form-select" value={priceCurrency} onChange={e => setPriceCurrency(e.target.value)}>
+              <div className={styles.row}>
+                <label className={styles.label}>Currency</label>
+                <select className={styles.select} value={priceCurrency} onChange={e => setPriceCurrency(e.target.value)}>
                   <option value="EUR">EUR</option>
                   <option value="USD">USD</option>
                   <option value="GBP">GBP</option>
                 </select>
               </div>
-              <div className="col-12 col-md-3">
-                <label className="form-label">Capacity</label>
-                <input type="number" min="1" step="1" className="form-control" value={capacity} onChange={e => setCapacity(e.target.value)} />
+              <div className={styles.row}>
+                <label className={styles.label}>Capacity</label>
+                <input type="number" min="1" step="1" className={styles.input} value={capacity} onChange={e => setCapacity(e.target.value)} />
               </div>
-
-              {eventMode === 'Inperson' && (
-                <>
-                  <div className="col-12">
-                    <label className="form-label">Address</label>
-                    <input className="form-control" value={address} onChange={e => setAddress(e.target.value)} />
-                  </div>
-                  <div className="col-12 col-md-4">
-                    <label className="form-label">City</label>
-                    <input className="form-control" value={city} onChange={e => setCity(e.target.value)} />
-                  </div>
-                  <div className="col-12 col-md-4">
-                    <label className="form-label">Postal code</label>
-                    <input className="form-control" value={postCode} onChange={e => setPostCode(e.target.value)} />
-                  </div>
-                  <div className="col-12 col-md-4">
-                    <label className="form-label">Country</label>
-                    <input className="form-control" value={country} onChange={e => setCountry(e.target.value)} />
-                  </div>
-                </>
-              )}
             </div>
 
-            <div className="d-flex gap-2 mt-3">
-              <button className="btn btn-primary" disabled={status === 'saving'} type="submit">
-                {status === 'saving' ? 'Saving…' : 'Save changes'}
+            {eventMode === 'Inperson' && (
+              <>
+                <div className={styles.row}>
+                  <label className={styles.label}>Address</label>
+                  <input className={styles.input} value={address} onChange={e => setAddress(e.target.value)} />
+                </div>
+                <div className={styles.grid3}>
+                  <div className={styles.row}>
+                    <label className={styles.label}>City</label>
+                    <input className={styles.input} value={city} onChange={e => setCity(e.target.value)} />
+                  </div>
+                  <div className={styles.row}>
+                    <label className={styles.label}>Postal code</label>
+                    <input className={styles.input} value={postCode} onChange={e => setPostCode(e.target.value)} />
+                  </div>
+                  <div className={styles.row}>
+                    <label className={styles.label}>Country</label>
+                    <input className={styles.input} value={country} onChange={e => setCountry(e.target.value)} />
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div className={styles.actions}>
+              <button className={styles.btnPrimary} disabled={status === 'saving'} type="submit">
+                {status === 'saving' ? 'Saving...' : 'Save changes'}
               </button>
-              <Link to={`/events/${id}`} className="btn btn-outline-secondary">Cancel</Link>
+              <Link to={`/events/${id}`} className={styles.btnGhost}>Cancel</Link>
             </div>
-          </form>
-        </div>
+            </form>
+          </div>
 
-        <div className="col-12 col-lg-4">
-          <div className="card p-3">
-            <div className="d-flex justify-content-between align-items-center mb-2">
-              <h2 className="h6 m-0">Participants</h2>
-              <span className="badge bg-secondary">{participants.length}</span>
+          <aside>
+            <div className={styles.card}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontWeight: 700 }}>Participants</div>
+              <span style={{ background: '#e5e7eb', borderRadius: 999, padding: '2px 8px', fontSize: 12 }}>{participants.length}</span>
             </div>
             {participants.length === 0 && (
-              <div className="text-muted">No participants yet.</div>
+              <div className={styles.muted}>No participants yet.</div>
             )}
             {participants.length > 0 && (
-              <div className="table-responsive">
-                <table className="table table-sm align-middle">
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {participants.map((p) => (
-                      <tr key={p._id || p.id || `${p.userId?._id || p.email}-rsvp`}>
-                        <td>{p.userId?.name || p.name || p.user?.name || '—'}</td>
-                        <td>{p.userId?.email || p.email || p.user?.email || '—'}</td>
-                        <td>{p.status || 'reserved'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <div className={styles.muted} style={{ fontSize: 12 }}>Filter by status</div>
+                  <select
+                    className={styles.select}
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    style={{ maxWidth: 180 }}
+                  >
+                    <option value="all">All</option>
+                    <option value="reserved">Reserved</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                </div>
+              </>
+            )}
+            {participants.length > 0 && (
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div className={styles.listHeader}>
+                  <div>Name</div>
+                  <div>Email</div>
+                  <div>Status</div>
+                </div>
+                  {(
+                    (() => {
+                      const norm = (s) => String(s || '').toLowerCase()
+                      const filtered = participants.filter(p => {
+                        if (statusFilter === 'all') return true
+                        const st = norm(p.status)
+                        if (statusFilter === 'reserved') return st === 'reserved'
+                        if (statusFilter === 'cancelled') return st === 'cancelled' || st === 'canceled'
+                        return true
+                      })
+                      return filtered
+                    })()
+                  ).map((p) => (
+                    <div key={p._id || p.id || `${p.userId?._id || p.email}-rsvp`} className={styles.listRow}>
+                      <div>{p.userId?.name || p.name || p.user?.name || '-'}</div>
+                      <div className={styles.muted} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {p.userId?.email || p.email || p.user?.email || '-'}
+                      </div>
+                      <div style={{ textTransform: 'capitalize' }}>{p.status || 'reserved'}</div>
+                    </div>
+                  ))}
               </div>
             )}
-          </div>
+            </div>
+          </aside>
         </div>
-      </div>
     </div>
+  </div>
   )
 }
 
