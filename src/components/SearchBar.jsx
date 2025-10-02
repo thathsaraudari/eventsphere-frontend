@@ -61,7 +61,7 @@ export default function SearchBar({ compact = false, initial = {} }) {
     <div className={compact ? '' : 'p-3 bg-white border rounded shadow-sm'}>
       <form className="row g-2" onSubmit={onSubmit}>
         <div className="col-12 col-md-6">
-          <input className="form-control" placeholder="Search events (e.g. React)" value={q} onChange={e=>setQ(e.target.value)} />
+          <input className="form-control" placeholder="Search events" value={q} onChange={e=>setQ(e.target.value)} />
         </div>
         <div className="col-6 col-md-3">
           <input className="form-control" placeholder="Postal code" value={postalCode} onChange={e=>setPostalCode(e.target.value)} />
