@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import styles from "./css/MyEvents.module.css";
 import api from "../api/client.js";
 import { formatDateRange, formatPrice } from '../utils/eventHelpers';
+import ConfirmDialog from "../components/ConfirmDialog.jsx";
 
 export default function MyEvents() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -21,6 +22,9 @@ export default function MyEvents() {
   const [savedEvents, setSavedEvents] = useState([]);
   const [savedLoading, setSavedLoading] = useState(false);
   const [savedError, setSavedError] = useState("");
+  const [confirmCancelId, setConfirmCancelId] = useState(null);
+  const [confirmUnsaveId, setConfirmUnsaveId] = useState(null);
+  const [unsavingId, setUnsavingId] = useState(null);
 
   useEffect(() => {
     let ignore = false;
@@ -92,6 +96,23 @@ export default function MyEvents() {
       console.error('Failed to cancel RSVP', e);
     } finally {
       setCancelingIds((prev) => ({ ...prev, [eventId]: false }));
+    }
+  }
+
+  async function handleUnsave(id) {
+    if (!id) return;
+    setUnsavingId(id);
+    try {
+      await api.delete(`/api/saved-events/${id}`);
+      setSavedEvents((prev) => prev.filter((entry) => {
+        const event = entry?.eventId || entry;
+        const eventId = event?._id || event?.id;
+        return String(eventId) !== String(id);
+      }));
+    } catch (e) {
+      console.error('Failed to unsave event', e);
+    } finally {
+      setUnsavingId(null);
     }
   }
 
@@ -199,62 +220,62 @@ export default function MyEvents() {
 
             {!loading && !error && rsvps.length > 0 && (
               <div className={styles.grid}>
-                {rsvps.map((r) => {
-                  const ev = r.eventId;
-                  if (!ev) return null;
+                {rsvps.map((rsvpEntry) => {
+                  const event = rsvpEntry.eventId;
+                  if (!event) return null;
                   return (
                     <article
-                      key={r._id}
+                      key={rsvpEntry._id}
                       className={styles.card}
                       role="link"
                       tabIndex={0}
-                      onClick={() => navigate(`/events/${ev._id}`)}
+                      onClick={() => navigate(`/events/${event._id}`)}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className={styles.mediaWrap}>
                         <img
-                          src={ev.coverUrl}
-                          alt={ev.title}
+                          src={event.coverUrl}
+                          alt={event.title}
                           className={styles.cover}
                           loading="lazy"
                         />
                         <span className={styles.badge}>
-                          {ev.eventMode === "Inperson" ? "In person" : "Online"}
+                          {event.eventMode === "Inperson" ? "In person" : "Online"}
                         </span>
                       </div>
 
                       <div className={styles.content}>
                         <h3 className={styles.cardTitle}>
-                          <Link to={`/events/${ev._id}`} className={styles.titleLink}>
-                            {ev.title}
+                          <Link to={`/events/${event._id}`} className={styles.titleLink}>
+                            {event.title}
                           </Link>
                         </h3>
 
                         <div className={styles.meta}>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>When</span>
-                            <span className={styles.metaVal}>{formatDateRange(ev.startAt, ev.endAt)}</span>
+                            <span className={styles.metaVal}>{formatDateRange(event.startAt, event.endAt)}</span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Where</span>
                             <span className={styles.metaVal}>
-                              {ev?.location?.city || "—"}
-                              {ev?.location?.country ? `, ${ev.location.country}` : ""}
+                              {event?.location?.city || "—"}
+                              {event?.location?.country ? `, ${event.location.country}` : ""}
                             </span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Price</span>
-                            <span className={styles.metaVal}>{formatPrice(ev.price)}</span>
+                            <span className={styles.metaVal}>{formatPrice(event.price)}</span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Seats</span>
                             <span className={styles.metaVal}>
-                              {ev?.capacity?.seatsRemaining ?? "—"} left / {ev?.capacity?.number ?? "—"} total
+                              {event?.capacity?.seatsRemaining ?? "—"} left / {event?.capacity?.number ?? "—"} total
                             </span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>RSVP</span>
-                            <span className={`${styles.status} ${styles[`status_${r.status}`]}`}>{r.status}</span>
+                            <span className={`${styles.status} ${styles[`status_${rsvpEntry.status}`]}`}>{rsvpEntry.status}</span>
                           </div>
                         </div>
 
@@ -262,10 +283,10 @@ export default function MyEvents() {
                           <button
                             type="button"
                             className="btn btn-outline-primary"
-                            onClick={(e) => { e.stopPropagation(); handleCancelRsvp(ev._id); }}
-                            disabled={!!cancelingIds[ev._id]}
+                            onClick={(e) => { e.stopPropagation(); setConfirmCancelId(event._id); }}
+                            disabled={!!cancelingIds[event._id]}
                           >
-                            {cancelingIds[ev._id] ? 'Cancelling...' : 'Cancel RSVP'}
+                            {cancelingIds[event._id] ? 'Cancelling...' : 'Cancel RSVP'}
                           </button>
                         </div>
                       </div>
@@ -311,9 +332,10 @@ export default function MyEvents() {
 
             {!savedLoading && !savedError && savedEvents && savedEvents.length > 0 && (
               <div className={styles.grid}>
-                {savedEvents.map((ev) => {
-                  if (!ev) return null;
-                  const id = ev._id || ev.id;
+                {savedEvents.map((entry) => {
+                  const event = entry?.eventId || entry;
+                  if (!event) return null;
+                  const id = event._id || event.id;
                   return (
                     <article
                       key={id}
@@ -325,13 +347,13 @@ export default function MyEvents() {
                     >
                       <div className={styles.mediaWrap}>
                         <img
-                          src={ev.coverUrl}
-                          alt={ev.title}
+                          src={event.coverUrl}
+                          alt={event.title}
                           className={styles.cover}
                           loading="lazy"
                         />
                         <span className={styles.badge}>
-                          {ev.eventMode === "Inperson" ? "In person" : "Online"}
+                          {event.eventMode === "Inperson" ? "In person" : "Online"}
                         </span>
                       </div>
 
@@ -339,7 +361,7 @@ export default function MyEvents() {
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                           <h3 className={styles.cardTitle} style={{ margin: 0 }}>
                             <Link to={`/events/${id}`} className={styles.titleLink} onClick={(e) => e.stopPropagation()}>
-                              {ev.title}
+                              {event.title}
                             </Link>
                           </h3>
                           <button
@@ -347,13 +369,7 @@ export default function MyEvents() {
                             style={{ background: 'none', border: 'none', padding: 0, fontSize: '24px', lineHeight: 1, color: '#dc3545' }}
                             aria-label="Unsave"
                             title="Unsave"
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              try {
-                                await api.delete(`/api/saved-events/${id}`);
-                                setSavedEvents((prev) => prev.filter((x) => (x?._id ?? x?.id) !== id));
-                              } catch (_) {}
-                            }}
+                            onClick={(e) => { e.stopPropagation(); setConfirmUnsaveId(id); }}
                           >
                             ♥
                           </button>
@@ -362,23 +378,23 @@ export default function MyEvents() {
                         <div className={styles.meta}>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>When</span>
-                            <span className={styles.metaVal}>{formatDateRange(ev.startAt, ev.endAt)}</span>
+                            <span className={styles.metaVal}>{formatDateRange(event.startAt, event.endAt)}</span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Where</span>
                             <span className={styles.metaVal}>
-                              {ev?.location?.city || "?"}
-                              {ev?.location?.country ? `, ${ev.location.country}` : ""}
+                              {event?.location?.city || "?"}
+                              {event?.location?.country ? `, ${event.location.country}` : ""}
                             </span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Price</span>
-                            <span className={styles.metaVal}>{formatPrice(ev.price)}</span>
+                            <span className={styles.metaVal}>{formatPrice(event.price)}</span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Seats</span>
                             <span className={styles.metaVal}>
-                              {ev?.capacity?.seatsRemaining ?? "?"} left / {ev?.capacity?.number ?? "?"} total
+                              {event?.capacity?.seatsRemaining ?? "?"} left / {event?.capacity?.number ?? "?"} total
                             </span>
                           </div>
                         </div>
@@ -431,62 +447,61 @@ export default function MyEvents() {
 
             {!loading && !error && hosted.length > 0 && (
               <div className={styles.grid}>
-                {hosted.map((h) => {
-                  const ev = h;
-                  if (!ev) return null;
+                {hosted.map((event) => {
+                  if (!event) return null;
                   return (
                     <article
-                      key={h._id}
+                      key={event._id}
                       className={styles.card}
                       role="link"
                       tabIndex={0}
-                      onClick={() => navigate(`/events/${ev._id}`)}
+                      onClick={() => navigate(`/events/${event._id}`)}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className={styles.mediaWrap}>
                         <img
-                          src={ev.coverUrl}
-                          alt={ev.title}
+                          src={event.coverUrl}
+                          alt={event.title}
                           className={styles.cover}
                           loading="lazy"
                         />
                         <span className={styles.badge}>
-                          {ev.eventMode === "Inperson" ? "In person" : "Online"}
+                          {event.eventMode === "Inperson" ? "In person" : "Online"}
                         </span>
                       </div>
 
                       <div className={styles.content}>
                         <h3 className={styles.cardTitle}>
-                          {ev.title}
+                          {event.title}
                         </h3>
 
                         <div className={styles.meta}>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>When</span>
-                            <span className={styles.metaVal}>{formatDateRange(ev.startAt, ev.endAt)}</span>
+                            <span className={styles.metaVal}>{formatDateRange(event.startAt, event.endAt)}</span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Where</span>
                             <span className={styles.metaVal}>
-                              {ev?.location?.city || "—"}
-                              {ev?.location?.country ? `, ${ev.location.country}` : ""}
+                              {event?.location?.city || "—"}
+                              {event?.location?.country ? `, ${event.location.country}` : ""}
                             </span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Price</span>
-                            <span className={styles.metaVal}>{formatPrice(ev.price)}</span>
+                            <span className={styles.metaVal}>{formatPrice(event.price)}</span>
                           </div>
                           <div className={styles.metaRow}>
                             <span className={styles.metaKey}>Seats</span>
                             <span className={styles.metaVal}>
-                              {ev?.capacity?.seatsRemaining ?? "—"} left / {ev?.capacity?.number ?? "—"} total
+                              {event?.capacity?.seatsRemaining ?? "—"} left / {event?.capacity?.number ?? "—"} total
                             </span>
                           </div>
                         </div>
 
                         <div className={styles.actions}>
                           <Link
-                            to={`/events/${ev._id}/edit`}
+                            to={`/events/${event._id}/edit`}
                             className="btn btn-outline-primary"
                             onClick={(e) => e.stopPropagation()}
                           >
@@ -495,7 +510,7 @@ export default function MyEvents() {
                           <button
                             type="button"
                             className="btn btn-outline-danger"
-                            onClick={(e) => { e.stopPropagation(); openDeleteConfirmPopup(ev); }}
+                            onClick={(e) => { e.stopPropagation(); openDeleteConfirmPopup(event); }}
                           >
                             Delete
                           </button>
@@ -544,6 +559,67 @@ export default function MyEvents() {
             </div>
           </div>
         </div>
+      )}
+
+      {confirmCancelId && (
+        <ConfirmDialog
+          open={!!confirmCancelId}
+          title="Cancel RSVP"
+          confirmText={cancelingIds[confirmCancelId] ? 'Cancelling…' : 'Confirm Cancel'}
+          cancelText="Keep RSVP"
+          confirmDisabled={!!cancelingIds[confirmCancelId]}
+          variant="danger"
+          onCancel={() => setConfirmCancelId(null)}
+          onConfirm={async () => {
+            await handleCancelRsvp(confirmCancelId)
+            setConfirmCancelId(null)
+          }}
+        >
+          {(() => {
+            const event = (rsvps || []).find(r => (r?.eventId?._id) === confirmCancelId)?.eventId
+            if (!event) return <div>Are you sure you want to cancel your RSVP?</div>
+            return (
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div style={{ fontWeight: 600, fontSize: 18 }}>{event.title}</div>
+                <div style={{ color: '#374151' }}>{formatDateRange(event.startAt, event.endAt)}</div>
+                <div>Are you sure you want to cancel your RSVP?</div>
+              </div>
+            )
+          })()}
+        </ConfirmDialog>
+      )}
+
+      {confirmUnsaveId && (
+        <ConfirmDialog
+          open={!!confirmUnsaveId}
+          title="Remove from saved?"
+          confirmText={unsavingId === confirmUnsaveId ? 'Removing…' : 'Remove'}
+          cancelText="Keep saved"
+          confirmDisabled={unsavingId === confirmUnsaveId}
+          variant="danger"
+          onCancel={() => setConfirmUnsaveId(null)}
+          onConfirm={async () => {
+            await handleUnsave(confirmUnsaveId)
+            setConfirmUnsaveId(null)
+          }}
+        >
+          {(() => {
+            const entry = (savedEvents || []).find(x => {
+              const e = x?.eventId || x;
+              const eid = e?._id || e?.id;
+              return String(eid) === String(confirmUnsaveId);
+            })
+            const event = entry?.eventId || entry;
+            if (!event) return <div>Remove this event from your saved list?</div>
+            return (
+              <div style={{ display: 'grid', gap: 8 }}>
+                <div style={{ fontWeight: 600, fontSize: 18 }}>{event.title}</div>
+                <div style={{ color: '#374151' }}>{formatDateRange(event.startAt, event.endAt)}</div>
+                <div>Remove this event from your saved list?</div>
+              </div>
+            )
+          })()}
+        </ConfirmDialog>
       )}
     </div>
   );

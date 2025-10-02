@@ -6,6 +6,7 @@ import { useAuth } from '../context/authContext.jsx'
 
 import { formatDateRange, formatPrice, addressText, mapLink } from '../utils/eventHelpers'
 import styles from '../pages/css/EventDetails.module.css'
+import ConfirmDialog from '../components/ConfirmDialog.jsx'
 
 export default function EventDetail() {
   const { id } = useParams()
@@ -20,6 +21,8 @@ export default function EventDetail() {
   const [isRsvped, setIsRsvped] = useState(false)
   const [rsvpLoading, setRsvpLoading] = useState(false)
   const [rsvpError, setRsvpError] = useState('')
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmCancelOpen, setConfirmCancelOpen] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -108,6 +111,18 @@ export default function EventDetail() {
     }
   }
 
+  function handleRsvpClick() {
+    if (!token) {
+      return navigate('/login', { replace: true, state: { from: location } })
+    }
+    if (isRsvped) {
+      // For cancellation, open confirmation dialog
+      return setConfirmCancelOpen(true)
+    }
+    // For new RSVP, open confirmation dialog
+    setConfirmOpen(true)
+  }
+
   async function handleToggleSave() {
     if (!token) {
       return navigate('/login', { replace: true, state: { from: location } })
@@ -159,6 +174,7 @@ export default function EventDetail() {
   const left = event.capacity.seatsRemaining
 
   return (
+  <>
   <div className={styles.eventPage}>
     <div className={styles.container}>
       <Link to="/" className={styles.backlink}>&larr; Back to events</Link>
@@ -244,7 +260,7 @@ export default function EventDetail() {
                 )}
                 <button
                   className={isRsvped ? styles.btnGhost : styles.btnPrimary}
-                  onClick={handleToggleRsvp}
+                  onClick={handleRsvpClick}
                   disabled={rsvpLoading || (!isRsvped && (typeof seatsLeft === 'number' && seatsLeft <= 0))}
                   type="button"
                 >
@@ -259,6 +275,71 @@ export default function EventDetail() {
         </div>
       </div>
 
-    </div>
+  </div>
+  {event && (
+    <ConfirmDialog
+      open={confirmOpen}
+      title="Confirm RSVP"
+      confirmText={rsvpLoading ? (isRsvped ? 'Updating…' : 'Submitting…') : 'Confirm RSVP'}
+      cancelText="Close"
+      confirmDisabled={rsvpLoading || (typeof seatsLeft === 'number' && seatsLeft <= 0)}
+      variant="success"
+      onCancel={() => setConfirmOpen(false)}
+      onConfirm={async () => {
+        await handleToggleRsvp()
+        setConfirmOpen(false)
+      }}
+    >
+      <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ fontWeight: 600, fontSize: 18 }}>{event.title}</div>
+        <div style={{ color: '#374151' }}>{formatDateRange(event.startAt, event.endAt)}</div>
+        {event.eventMode === 'Inperson' && (
+          <div style={{ color: '#4b5563' }}>{addressText(event.location)}</div>
+        )}
+        <div>
+          <span style={{ color: '#6b7280' }}>Price: </span>
+          <strong>{formatPrice(event.price)}</strong>
+        </div>
+        <div>
+          <span style={{ color: '#6b7280' }}>Seats remaining: </span>
+          <strong>{seatsLeft}</strong>
+        </div>
+        {!isRsvped && typeof seatsLeft === 'number' && seatsLeft <= 0 && (
+          <div style={{ color: 'crimson' }}>This event is full. RSVP is disabled.</div>
+        )}
+        <div style={{ color: '#374151' }}>
+          Do you want to RSVP to this event?
+        </div>
+        {rsvpError && (
+          <div style={{ color: 'crimson', fontSize: 14 }}>{rsvpError}</div>
+        )}
+      </div>
+    </ConfirmDialog>
+  )}
+  {event && (
+    <ConfirmDialog
+      open={confirmCancelOpen}
+      title="Cancel RSVP"
+      confirmText={rsvpLoading ? 'Cancelling…' : 'Confirm Cancel'}
+      cancelText="Keep RSVP"
+      confirmDisabled={rsvpLoading}
+      variant="danger"
+      onCancel={() => setConfirmCancelOpen(false)}
+      onConfirm={async () => {
+        await handleToggleRsvp()
+        setConfirmCancelOpen(false)
+      }}
+    >
+      <div style={{ display: 'grid', gap: 12 }}>
+        <div style={{ fontWeight: 600, fontSize: 18 }}>{event.title}</div>
+        <div style={{ color: '#374151' }}>{formatDateRange(event.startAt, event.endAt)}</div>
+        <div>Are you sure you want to cancel your RSVP?</div>
+        {rsvpError && (
+          <div style={{ color: 'crimson', fontSize: 14 }}>{rsvpError}</div>
+        )}
+      </div>
+    </ConfirmDialog>
+  )}
+  </>
   )
 }
