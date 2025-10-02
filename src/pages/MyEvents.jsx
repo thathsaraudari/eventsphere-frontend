@@ -8,7 +8,7 @@ export default function MyEvents() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState(() => {
     const t = (searchParams.get('tab') || '').toLowerCase();
-    return t === 'hosting' ? 'hosting' : 'attending';
+    return t === 'hosting' ? 'hosting' : (t === 'saved' ? 'saved' : 'attending');
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,6 +18,9 @@ export default function MyEvents() {
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
+  const [savedEvents, setSavedEvents] = useState([]);
+  const [savedLoading, setSavedLoading] = useState(false);
+  const [savedError, setSavedError] = useState("");
 
   useEffect(() => {
     let ignore = false;
@@ -26,6 +29,20 @@ export default function MyEvents() {
       try {
         setLoading(true);
         setError("");
+        if (activeTab === 'saved') {
+          try {
+            setSavedLoading(true);
+            setSavedError("");
+            const { data } = await api.get('/api/saved-events/');
+            const list = data;
+            if (!ignore) setSavedEvents(list);
+          } catch (e) {
+            if (!ignore) setSavedError('Failed to load saved events');
+          } finally {
+            if (!ignore) setSavedLoading(false);
+          }
+          return;
+        }
         const endpoint = activeTab === "hosting" ? "/api/my-events/hosting" : "/api/my-events/attending";
         const { data } = await api.get(endpoint);
         if (ignore) return;
@@ -50,7 +67,7 @@ export default function MyEvents() {
 
   useEffect(() => {
     const t = (searchParams.get('tab') || '').toLowerCase();
-    const next = t === 'hosting' ? 'hosting' : 'attending';
+    const next = t === 'hosting' ? 'hosting' : (t === 'saved' ? 'saved' : 'attending');
     if (next !== activeTab) setActiveTab(next);
   }, [searchParams]);
 
@@ -131,6 +148,18 @@ export default function MyEvents() {
           type="button"
         >
           Hosting
+        </button>
+
+        <button
+          role="tab"
+          aria-selected={activeTab === "saved"}
+          aria-controls="panel-saved"
+          id="tab-saved"
+          className={`${styles.tab} ${activeTab === "saved" ? styles.activeTab : ""}`}
+          onClick={() => setActiveTab("saved")}
+          type="button"
+        >
+          Saved
         </button>
       </div>
 
@@ -239,6 +268,122 @@ export default function MyEvents() {
                             {cancelingIds[ev._id] ? 'Cancelling...' : 'Cancel RSVP'}
                           </button>
                         </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        )}
+
+        {activeTab === "saved" && (
+          <section
+            role="tabpanel"
+            id="panel-saved"
+            aria-labelledby="tab-saved"
+            className={styles.panel}
+          >
+            {savedError && (
+              <div className={styles.alert}>
+                <strong>Couldn’t load saved events.</strong>
+                <div className={styles.alertMsg}>{savedError}</div>
+              </div>
+            )}
+
+            {savedLoading && (
+              <div className={styles.grid}>
+                <div className={styles.cardSkeleton} />
+                <div className={styles.cardSkeleton} />
+                <div className={styles.cardSkeleton} />
+              </div>
+            )}
+
+            {!savedLoading && !savedError && (!savedEvents || savedEvents.length === 0) && (
+              <div className={styles.emptyState}>
+                <div className={styles.emptyIcon}>☆</div>
+                <h2 className={styles.emptyTitle}>No saved events yet</h2>
+                <p className={styles.emptyText}>
+                  Tap “Save” on any event to add it here.
+                </p>
+              </div>
+            )}
+
+            {!savedLoading && !savedError && savedEvents && savedEvents.length > 0 && (
+              <div className={styles.grid}>
+                {savedEvents.map((ev) => {
+                  if (!ev) return null;
+                  const id = ev._id || ev.id;
+                  return (
+                    <article
+                      key={id}
+                      className={styles.card}
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => navigate(`/events/${id}`)}
+                      style={{ cursor: 'pointer' }}
+                    >
+                      <div className={styles.mediaWrap}>
+                        <img
+                          src={ev.coverUrl}
+                          alt={ev.title}
+                          className={styles.cover}
+                          loading="lazy"
+                        />
+                        <span className={styles.badge}>
+                          {ev.eventMode === "Inperson" ? "In person" : "Online"}
+                        </span>
+                      </div>
+
+                      <div className={styles.content}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                          <h3 className={styles.cardTitle} style={{ margin: 0 }}>
+                            <Link to={`/events/${id}`} className={styles.titleLink} onClick={(e) => e.stopPropagation()}>
+                              {ev.title}
+                            </Link>
+                          </h3>
+                          <button
+                            type="button"
+                            style={{ background: 'none', border: 'none', padding: 0, fontSize: '24px', lineHeight: 1, color: '#dc3545' }}
+                            aria-label="Unsave"
+                            title="Unsave"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              try {
+                                await api.delete(`/api/saved-events/${id}`);
+                                setSavedEvents((prev) => prev.filter((x) => (x?._id ?? x?.id) !== id));
+                              } catch (_) {}
+                            }}
+                          >
+                            ♥
+                          </button>
+                        </div>
+
+                        <div className={styles.meta}>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>When</span>
+                            <span className={styles.metaVal}>{formatDateRange(ev.startAt, ev.endAt)}</span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>Where</span>
+                            <span className={styles.metaVal}>
+                              {ev?.location?.city || "?"}
+                              {ev?.location?.country ? `, ${ev.location.country}` : ""}
+                            </span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>Price</span>
+                            <span className={styles.metaVal}>{formatPrice(ev.price)}</span>
+                          </div>
+                          <div className={styles.metaRow}>
+                            <span className={styles.metaKey}>Seats</span>
+                            <span className={styles.metaVal}>
+                              {ev?.capacity?.seatsRemaining ?? "?"} left / {ev?.capacity?.number ?? "?"} total
+                            </span>
+                          </div>
+                        </div>
+
+                        
                       </div>
                     </article>
                   );

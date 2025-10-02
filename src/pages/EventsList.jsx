@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
+import { useSearchParams, useNavigate, useLocation } from "react-router-dom";
 import api from "../api/client";
 import SearchBar from "../components/SearchBar.jsx";
+import { useAuth } from "../context/authContext.jsx";
 import { formatDateRange } from "../utils/eventHelpers";
 import styles from "./css/EventsList.module.css";
 
@@ -12,6 +13,40 @@ export default function EventsList() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const { token } = useAuth();
+  const [saveStates, setSaveStates] = useState({});
+  const [savedIds, setSavedIds] = useState(new Set());
+  const [savedInitLoaded, setSavedInitLoaded] = useState(false);
+
+  useEffect(() => {
+    let ignore = false;
+    async function loadSaved() {
+      if (!token) {
+        setSavedIds(new Set());
+        setSavedInitLoaded(true);
+        return;
+      }
+      try {
+        const { data } = await api.get('/api/saved-events/');
+        if (ignore) return;
+        const list = data;
+        const ids = new Set();
+        list.forEach((entry) => {
+          const event = entry.eventId;
+          const id = event._id;
+          if (id != null) ids.add(String(id));
+        });
+        setSavedIds(ids);
+      } catch {
+        setSavedIds(new Set());
+      } finally {
+        setSavedInitLoaded(true);
+      }
+    }
+    loadSaved();
+    return () => { ignore = true };
+  }, [token]);
 
   const query = useMemo(() => {
     return {
@@ -64,6 +99,35 @@ export default function EventsList() {
   const fromIdx = totalItems === 0 ? 0 : (currentPage - 1) * pageSize + 1;
   const toIdx = Math.min(currentPage * pageSize, totalItems);
 
+  async function handleToggleSave(eventData, e) {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const eventId = eventData?._id ?? eventData?.id;
+    if (!eventId) return;
+    if (saveStates[eventId]?.loading) return;
+    if (!token) {
+      navigate('/login', { state: { from: location } });
+      return;
+    }
+    setSaveStates((prev) => ({ ...prev, [eventId]: { loading: true, error: '' } }));
+    try {
+      const idStr = String(eventId);
+      if (savedIds.has(idStr)) {
+        await api.delete(`/api/saved-events/${eventId}`);
+        setSavedIds((prev) => { const next = new Set(prev); next.delete(idStr); return next; });
+      } else {
+        await api.post(`/api/saved-events/${eventId}`);
+        setSavedIds((prev) => { const next = new Set(prev); next.add(idStr); return next; });
+      }
+      setSaveStates((prev) => { const next = { ...prev }; delete next[eventId]; return next; });
+    } catch (err) {
+      const message = 'Failed to update saved events';
+      setSaveStates((prev) => ({ ...prev, [eventId]: { loading: false, error: message } }));
+    }
+  }
+
   function setPage(p) {
     const next = new URLSearchParams(searchParams);
     next.set("page", String(Math.min(Math.max(1, p), totalPages)));
@@ -97,6 +161,16 @@ export default function EventsList() {
           const capTotal = event?.capacity?.number;
           const seatsLeft = event?.capacity?.seatsRemaining;
           const attendeesNow = Math.max(0, capTotal - seatsLeft);
+          const truncateAtWord = (text, max) => {
+            const s = typeof text === 'string' ? text : '';
+            if (s.length <= max) return s;
+            const sub = s.slice(0, max);
+            const lastSpace = sub.lastIndexOf(' ');
+            const cut = lastSpace > 0 ? sub.slice(0, lastSpace) : sub;
+            return cut.trimEnd() + '…';
+          };
+          const MAX_DESC = 160;
+          const desc = truncateAtWord(event?.description || '', MAX_DESC);
 
           return (
             <div key={event._id || event.id} className="col-12 col-md-6 col-lg-4">
@@ -114,7 +188,34 @@ export default function EventsList() {
                   loading="lazy"
                 />
                 <div className="card-body d-flex flex-column">
-                  <h5 className="card-title">{event.title}</h5>
+                  {(() => {
+                    const eventId = event._id || event.id;
+                    const saved = savedIds.has(String(eventId));
+                    const state = saveStates[eventId] || { loading: false, error: '' };
+                    const label = state.loading ? (saved ? 'Removing…' : 'Saving…') : (saved ? 'Unsave' : 'Save');
+                    const heart = state.loading ? '…' : (saved ? '♥' : '♡');
+                    const color = saved ? '#dc3545' : '#6c757d';
+                    const styleBtn = { background: 'none', border: 'none', padding: 0, marginLeft: 8, fontSize: '24px', lineHeight: 1, color };
+                    return (
+                      <div className="d-flex justify-content-between align-items-start mb-2">
+                        <h5 className="card-title mb-0">{event.title}</h5>
+                        <button
+                          type="button"
+                          style={styleBtn}
+                          aria-pressed={saved}
+                          disabled={state.loading}
+                          onClick={(e) => handleToggleSave(event, e)}
+                          aria-label={label}
+                          title={label}
+                        >
+                          {heart}
+                        </button>
+                      </div>
+                    );
+                  })()}
+                  {saveStates[(event._id || event.id)]?.error && (
+                    <div className="text-danger small mb-2">{saveStates[(event._id || event.id)]?.error}</div>
+                  )}
                   <p className="card-text small text-muted" style={{ marginBottom: 4 }}>{dateLine}</p>
                   {mode && (
                     <p className="card-text small" style={{ marginBottom: 4 }}>
@@ -129,7 +230,7 @@ export default function EventsList() {
                       {attendeesNow} going{capTotal != null ? ` • ${capTotal} capacity` : ""}
                     </p>
                   )}
-                  <p className="card-text flex-grow-1" style={{ whiteSpace: 'pre-wrap' }}>{event.description || ''}</p>
+                  <p className="card-text flex-grow-1" style={{ whiteSpace: 'pre-wrap' }}>{desc}</p>
                 </div>
               </div>
             </div>
