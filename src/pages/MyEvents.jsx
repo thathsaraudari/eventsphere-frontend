@@ -15,6 +15,8 @@ export default function MyEvents() {
   const [rsvps, setRsvps] = useState([]); 
   const [hosted, setHosted] = useState([]);
   const [cancelingIds, setCancelingIds] = useState({});
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,7 +54,6 @@ export default function MyEvents() {
     if (next !== activeTab) setActiveTab(next);
   }, [searchParams]);
 
-  // Reflect current tab selection in the URL
   useEffect(() => {
     const cur = (searchParams.get('tab') || '').toLowerCase();
     if (cur !== activeTab) {
@@ -74,6 +75,29 @@ export default function MyEvents() {
       console.error('Failed to cancel RSVP', e);
     } finally {
       setCancelingIds((prev) => ({ ...prev, [eventId]: false }));
+    }
+  }
+
+  function openDeleteConfirmPopup(event) {
+    setDeleteTarget(event);
+  }
+
+  function closeDeleteConfirm() {
+    if (deleting) return;
+    setDeleteTarget(null);
+  }
+
+  async function handleDeleteEvent() {
+    if (!deleteTarget?._id) return;
+    setDeleting(true);
+    try {
+      await api.delete(`/api/events/${deleteTarget._id}`);
+      setHosted((prev) => prev.filter((e) => e._id !== deleteTarget._id));
+      setDeleteTarget(null);
+    } catch (e) {
+      console.error('Failed to delete event', e);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -323,6 +347,13 @@ export default function MyEvents() {
                           >
                             Edit event
                           </Link>
+                          <button
+                            type="button"
+                            className="btn btn-outline-danger"
+                            onClick={(e) => { e.stopPropagation(); openDeleteConfirmPopup(ev); }}
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     </article>
@@ -333,6 +364,42 @@ export default function MyEvents() {
           </section>
         )}
       </div>
+      {deleteTarget && (
+        <div
+          className={styles.confirmOverlay}
+          role="dialog"
+          aria-modal="true"
+          onClick={closeDeleteConfirm}
+        >
+          <div
+            className={styles.confirmBox}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className={styles.confirmTitle}>Delete event?</h3>
+            <p className={styles.confirmText}>
+              Are you sure you want to delete "{deleteTarget.title}"? This cannot be undone.
+            </p>
+            <div className={styles.confirmActions}>
+              <button
+                type="button"
+                className={styles.confirmCancel}
+                onClick={closeDeleteConfirm}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={styles.confirmDelete}
+                onClick={handleDeleteEvent}
+                disabled={deleting}
+              >
+                {deleting ? 'Deleting…' : 'Yes, delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

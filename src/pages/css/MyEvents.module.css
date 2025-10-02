@@ -147,3 +147,69 @@
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
 }
+
+.confirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1200;
+}
+
+.confirmBox {
+  background: #fff;
+  padding: 20px;
+  border-radius: 14px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+}
+
+.confirmTitle {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.confirmText {
+  margin: 0 0 16px;
+  color: #4b5563;
+  font-size: 15px;
+}
+
+.confirmActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.confirmCancel,
+.confirmDelete {
+  border: none;
+  border-radius: 8px;
+  padding: 9px 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.confirmCancel {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.confirmCancel:disabled,
+.confirmDelete:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.confirmDelete {
+  background: #dc2626;
+  color: #fff;
+}
+
+.confirmDelete:hover {
+  background: #b91c1c;
+}
