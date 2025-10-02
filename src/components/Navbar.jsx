@@ -21,13 +21,13 @@ export default function Navbar() {
 
           {!user ? (
             <div className="d-flex gap-2">
-              <NavLink className="btn btn-outline-primary" to="/login">Log in</NavLink>
+              <NavLink className="btn btn-outline-secondary" to="/login">Log in</NavLink>
               <NavLink className="btn btn-primary" to="/signup">Sign up</NavLink>
             </div>
           ) : (
             <div className="dropdown">
               <button className="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
-                {user.name || user.username || user.email}
+                {([user?.firstName, user?.lastName].join(' '))}
               </button>
               <ul className="dropdown-menu dropdown-menu-end">
                 <li>
