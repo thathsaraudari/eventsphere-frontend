@@ -8,7 +8,7 @@ export default function Navbar() {
   return (
     <nav className="navbar navbar-expand-lg bg-white border-bottom">
       <div className="container">
-        <Link className="navbar-brand fw-bold" to="/">EventSphere</Link>
+        <Link className="navbar-brand brand-xl" to="/">EventSphere</Link>
 
         <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
           <span className="navbar-toggler-icon"></span>
