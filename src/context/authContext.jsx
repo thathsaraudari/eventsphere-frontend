@@ -56,11 +56,10 @@ export function AuthProvider({ children }) {
     return data
   }
 
-  async function signup({ email, password, username, name }) {
-    const displayName = name || username || ''
+  async function signup({ email, password, firstName, lastName }) {
     const { data } = await api.post(
       '/auth/signup',
-      { email, password, name: displayName },
+      { email, password, firstName, lastName },
       { withCredentials: true }
     )
 
@@ -68,7 +67,7 @@ export function AuthProvider({ children }) {
     if (t) {
       setToken(t)
       localStorage.setItem('accessToken', t)
-      setUser(data?.user || { email, name: displayName })
+      setUser(data?.user || { email, firstName, lastName })
       return data
     }
 
