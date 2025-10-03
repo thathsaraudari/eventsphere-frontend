@@ -84,10 +84,9 @@ export default function Profile() {
       };
 
       const { data } = await api.patch('/api/profile/', payload);
-      const updated = data?.user || data || payload;
-      updateUser(updated);
       setSuccess('Profile updated successfully.');
     } catch (e) {
+      console.error(e);
       setError('Failed to update profile.');
     } finally {
       setSaving(false);

@@ -112,7 +112,7 @@ export default function EditEvent() {
         }
       }
       await api.patch(`/api/events/${id}`, payload)
-      navigate(`/events/${id}`)
+      navigate(`/events/${id}`, { state: { from: { name: 'myevents', tab: 'hosting' } } })
     } catch (e) {
       setStatus('ready')
       setError(e?.response?.data?.message || e.message || 'Failed to save changes')
@@ -293,13 +293,13 @@ export default function EditEvent() {
                       })
                       return filtered
                     })()
-                  ).map((p) => (
-                    <div key={p._id || p.id || `${p.userId?._id || p.email}-rsvp`} className={styles.listRow}>
-                      <div>{p.userId?.name || p.name || p.user?.name || '-'}</div>
+                  ).map((participant) => (
+                    <div key={participant.email} className={styles.listRow}>
+                      <div>{participant.firstName} {participant.lastName}</div>
                       <div className={styles.muted} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {p.userId?.email || p.email || p.user?.email || '-'}
+                        {participant.userId?.email || participant.email || participant.user?.email || '-'}
                       </div>
-                      <div style={{ textTransform: 'capitalize' }}>{p.status || 'reserved'}</div>
+                      <div style={{ textTransform: 'capitalize' }}>{participant.status || 'reserved'}</div>
                     </div>
                   ))}
               </div>

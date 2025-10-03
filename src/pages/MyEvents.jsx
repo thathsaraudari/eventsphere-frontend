@@ -116,6 +116,12 @@ export default function MyEvents() {
     }
   }
 
+  function openEventDetail(id, e) {
+    if (!id) return;
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    navigate(`/events/${id}`, { state: { from: { name: 'myevents', tab: activeTab } } });
+  }
+
   function openDeleteConfirmPopup(event) {
     setDeleteTarget(event);
   }
@@ -229,7 +235,7 @@ export default function MyEvents() {
                       className={styles.card}
                       role="link"
                       tabIndex={0}
-                      onClick={() => navigate(`/events/${event._id}`)}
+                      onClick={() => openEventDetail(event._id)}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className={styles.mediaWrap}>
@@ -246,7 +252,7 @@ export default function MyEvents() {
 
                       <div className={styles.content}>
                         <h3 className={styles.cardTitle}>
-                          <Link to={`/events/${event._id}`} className={styles.titleLink}>
+                          <Link to={`/events/${event._id}`} state={{ from: { name: 'myevents', tab: activeTab } }} className={styles.titleLink}>
                             {event.title}
                           </Link>
                         </h3>
@@ -342,7 +348,7 @@ export default function MyEvents() {
                       className={styles.card}
                       role="link"
                       tabIndex={0}
-                      onClick={() => navigate(`/events/${id}`)}
+                      onClick={() => openEventDetail(id)}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className={styles.mediaWrap}>
@@ -360,7 +366,7 @@ export default function MyEvents() {
                       <div className={styles.content}>
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
                           <h3 className={styles.cardTitle} style={{ margin: 0 }}>
-                            <Link to={`/events/${id}`} className={styles.titleLink} onClick={(e) => e.stopPropagation()}>
+                            <Link to={`/events/${id}`} state={{ from: { name: 'myevents', tab: activeTab } }} className={styles.titleLink} onClick={(e) => e.stopPropagation()}>
                               {event.title}
                             </Link>
                           </h3>
@@ -455,7 +461,7 @@ export default function MyEvents() {
                       className={styles.card}
                       role="link"
                       tabIndex={0}
-                      onClick={() => navigate(`/events/${event._id}`)}
+                      onClick={() => openEventDetail(event._id)}
                       style={{ cursor: 'pointer' }}
                     >
                       <div className={styles.mediaWrap}>
