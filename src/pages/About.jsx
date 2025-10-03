@@ -4,7 +4,6 @@ import logo from '../assets/logo.svg'
 export default function About() {
   return (
     <div className="container py-4 py-md-5">
-      {/* Hero */}
       <div className="row g-4 align-items-center justify-content-between mb-4 mb-md-5">
         <div className="col-12 col-lg-6">
           <div className="card cardReset h-100">
@@ -12,7 +11,7 @@ export default function About() {
               <span className="badge rounded-pill text-bg-light mb-2" style={{ border: '1px solid #e5e7eb' }}>About</span>
               <h1 className="h3 mb-3">Bring People Together With EventSphere</h1>
               <p className="text-muted mb-4">
-                Discover, create, and manage events with ease. Whether you’re hosting a
+                Discover, create, and manage events with ease. Whether you're hosting a
                 workshop, organizing a meetup, or planning a conference, EventSphere provides
                 the tools to make it simple and delightful.
               </p>
@@ -24,7 +23,7 @@ export default function About() {
           </div>
         </div>
         <div className="col-12 col-lg-5">
-          <div className="card cardReset h-100">
+          <div className="card cardReset h-100 overflow-hidden">
             <div className="card-body p-4 p-md-5 d-grid gap-3">
               <div className="d-flex align-items-center gap-3">
                 <img src={logo} alt="EventSphere logo" height={40} width={40} />
@@ -32,6 +31,15 @@ export default function About() {
                   <div className="fw-semibold">Modern. Simple. Fast.</div>
                   <div className="text-muted small">Built for communities and creators.</div>
                 </div>
+              </div>
+              <div className="ratio ratio-16x9 rounded-3 shadow-sm" style={{ backgroundColor: 'rgba(var(--brand-primary-rgb), .08)' }}>
+                <img
+                  src="https://images.unsplash.com/photo-1511578314322-379afb476865?auto=format&fit=crop&w=1600&q=60"
+                  alt="People attending a tech event"
+                  className="w-100 h-100 rounded-3"
+                  style={{ objectFit: 'cover' }}
+                  loading="lazy"
+                />
               </div>
               <div className="row row-cols-2 g-3">
                 {[
@@ -55,13 +63,12 @@ export default function About() {
         </div>
       </div>
 
-      {/* Stats */}
       <div className="row g-3 g-md-4 mb-4 mb-md-5">
         {[
-          { value: '10k+', label: 'Attendees engaged' },
-          { value: '2k+', label: 'Events published' },
-          { value: '120+', label: 'Cities represented' },
-          { value: '99.9%', label: 'Uptime & reliability' },
+          { value: '350+', label: 'Attendees engaged' },
+          { value: '80+', label: 'Events created' },
+          { value: '12+', label: 'Cities represented' },
+          { value: '99.5%', label: 'Uptime during demos' },
         ].map((s, i) => (
           <div key={i} className="col-6 col-lg-3">
             <div className="card cardReset h-100 text-center">
@@ -74,7 +81,31 @@ export default function About() {
         ))}
       </div>
 
-      {/* Mission & Story */}
+      <div className="card cardReset mb-4 mb-md-5">
+        <div className="card-body p-4 p-md-5">
+          <h2 className="h5 mb-3">Meet the Team</h2>
+          <div className="row justify-content-center">
+            <div className="col-12 col-md-6 col-lg-4">
+              <div className="text-center p-4 border rounded-3 h-100">
+                <div className="d-flex justify-content-center mb-3">
+                  <img
+                    src="https://api.dicebear.com/9.x/initials/png?seed=Thathsara%20Abayawardana&backgroundType=gradientLinear&radius=50"
+                    alt="Thathsara Abayawardana avatar"
+                    width={96}
+                    height={96}
+                    className="rounded-circle shadow-sm"
+                    style={{ objectFit: 'cover' }}
+                    loading="lazy"
+                  />
+                </div>
+                <div className="fw-semibold">Thathsara Abayawardana</div>
+                <div className="text-muted">Founder</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="row g-4 mb-4 mb-md-5">
         <div className="col-12 col-lg-6">
           <div className="card cardReset h-100">
@@ -100,7 +131,25 @@ export default function About() {
         </div>
       </div>
 
-      {/* Features */}
+      <div className="card cardReset mb-4 mb-md-5">
+        <div className="card-body p-4 p-md-5">
+          <h2 className="h5 mb-3">Moments From Events</h2>
+          <div className="row g-3 g-md-4">
+            {[
+              'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1400&q=60',
+              'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1400&q=60',
+              'https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1400&q=60',
+            ].map((src, i) => (
+              <div key={i} className="col-12 col-md-4">
+                <div className="rounded-3 overflow-hidden shadow-sm" style={{ backgroundColor: 'rgba(0,0,0,.04)' }}>
+                  <img src={src} alt={`Event highlight ${i + 1}`} className="w-100 h-100" style={{ objectFit: 'cover' }} loading="lazy" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="row g-3 g-md-4 mb-4 mb-md-5">
         {[
           { icon: 'search', title: 'Powerful Search', desc: 'Filter by category, date, or location to find the right event fast.' },
@@ -122,7 +171,6 @@ export default function About() {
         ))}
       </div>
 
-      {/* How it works */}
       <div className="card cardReset mb-4 mb-md-5">
         <div className="card-body p-4 p-md-5">
           <h2 className="h5 mb-3">How It Works</h2>
@@ -147,7 +195,6 @@ export default function About() {
         </div>
       </div>
 
-      {/* CTA */}
       <div className="card cardReset">
         <div className="card-body p-4 p-md-5 d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between gap-3">
           <div>
