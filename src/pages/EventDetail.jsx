@@ -170,6 +170,17 @@ export default function EventDetail() {
   const price = formatPrice(event.price)
   const addr = addressText(event.location)
   const mapsUrl = mapLink(event.location)
+
+  function mapEmbedSrc(location) {
+    if (!location) return null;
+    const base = 'https://www.google.com/maps';
+    if (location.coords && Array.isArray(location.coords.coordinates)) {
+      const [lng, lat] = location.coords.coordinates;
+      return `${base}?q=${encodeURIComponent(`${lat},${lng}`)}&hl=en&z=14&output=embed`;
+    }
+    const a = addressText(location);
+    return a ? `${base}?q=${encodeURIComponent(a)}&hl=en&z=14&output=embed` : null;
+  }
   const capacity = event.capacity.number
   const left = event.capacity.seatsRemaining
 
@@ -213,7 +224,49 @@ export default function EventDetail() {
             {saveError && (
               <div style={{ color: 'crimson', fontSize: 14, marginTop: 4 }}>{saveError}</div>
             )}
-            <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{event.description}</p>
+            {event.description && (
+              <section style={{ marginTop: 12 }}>
+                <h2 className="h6" style={{ marginBottom: 8 }}>About this event</h2>
+                <p style={{ whiteSpace: 'pre-wrap', margin: 0 }}>{event.description}</p>
+              </section>
+            )}
+
+            {/* Additional details (no duplicates with sidebar) */}
+            <section style={{ marginTop: 16, display: 'grid', gap: 8, color: '#374151' }}>
+              {event.category && (
+                <div>
+                  <span style={{ color: '#6b7280' }}>Category: </span>
+                  <strong>{event.category}</strong>
+                </div>
+              )}
+              {Array.isArray(event.tags) && event.tags.length > 0 && (
+                <div>
+                  <span style={{ color: '#6b7280' }}>Tags: </span>
+                  <strong>{event.tags.join(', ')}</strong>
+                </div>
+              )}
+              {event.organizer?.name && (
+                <div>
+                  <span style={{ color: '#6b7280' }}>Organizer: </span>
+                  <strong>{event.organizer.name}</strong>
+                </div>
+              )}
+              {event.website && (
+                <div>
+                  <span style={{ color: '#6b7280' }}>Website: </span>
+                  <a href={event.website} className={styles.backlink} target="_blank" rel="noreferrer">{event.website}</a>
+                </div>
+              )}
+            </section>
+
+            {/* Location moved to sidebar map */}
+
+            {event.eventMode && event.eventMode !== 'Inperson' && event.onlineUrl && (
+              <section style={{ marginTop: 16 }}>
+                <h2 className="h6" style={{ marginBottom: 8 }}>Join link</h2>
+                <a href={event.onlineUrl} className={styles.backlink} target="_blank" rel="noreferrer">{event.onlineUrl}</a>
+              </section>
+            )}
           </div>
         </div>
 
@@ -270,6 +323,77 @@ export default function EventDetail() {
                 </button>
 
               </div>
+
+              {/* Share (sidebar) */}
+              <div style={{ marginTop: 12 }}>
+                <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 6 }}>Share</div>
+                <div className="d-flex flex-wrap gap-2">
+                  <a
+                    className="btn btn-outline-secondary btn-sm"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`}
+                  >
+                    <i className="bi bi-facebook me-1"></i>Facebook
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary btn-sm"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(event.title)}&url=${encodeURIComponent(window.location.href)}`}
+                  >
+                    <i className="bi bi-twitter-x me-1"></i>X
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary btn-sm"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`}
+                  >
+                    <i className="bi bi-linkedin me-1"></i>LinkedIn
+                  </a>
+                  <a
+                    className="btn btn-outline-secondary btn-sm"
+                    target="_blank"
+                    rel="noreferrer"
+                    href={`https://wa.me/?text=${encodeURIComponent(event.title + ' ' + window.location.href)}`}
+                  >
+                    <i className="bi bi-whatsapp me-1"></i>WhatsApp
+                  </a>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary btn-sm"
+                    onClick={() => { navigator.clipboard.writeText(window.location.href) }}
+                  >
+                    <i className="bi bi-clipboard me-1"></i>Copy link
+                  </button>
+                </div>
+              </div>
+
+              {/* Map (sidebar) */}
+              {event.eventMode === 'Inperson' && mapEmbedSrc(event.location) && (
+                <div style={{ marginTop: 12 }}>
+                  <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 6 }}>Location</div>
+                  {addr && <div style={{ marginBottom: 6 }}>{addr}</div>}
+                  {mapsUrl && (
+                    <div style={{ marginBottom: 6 }}>
+                      <a href={mapsUrl} target="_blank" rel="noreferrer" className={styles.backlink}>Open in Google Maps</a>
+                    </div>
+                  )}
+                  <div style={{ borderRadius: 12, overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                    <iframe
+                      title="Event location map"
+                      src={mapEmbedSrc(event.location)}
+                      width="100%"
+                      height="220"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      allowFullScreen
+                    ></iframe>
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
         </div>
