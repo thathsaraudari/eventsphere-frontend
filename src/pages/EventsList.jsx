@@ -241,7 +241,7 @@ export default function EventsList() {
                 className={`card h-100 ${styles.cardReset}`}
                 role="link"
                 tabIndex={0}
-                onClick={() => navigate(`/events/${event._id || event.id}`)}
+                onClick={() => navigate(`/events/${event._id}`, { state: { from: { name: 'events', search: location.search } } })}
                 style={{ cursor: 'pointer' }}
               >
                 <img

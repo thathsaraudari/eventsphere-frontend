@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styles from '../pages/css/Profile.module.css';
 import { useAuth } from '../context/authContext.jsx';
 import api from '../api/client.js';
@@ -23,6 +23,16 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+  const displayName = useMemo(() => {
+    const name = [firstName, lastName].filter(Boolean).join(' ').trim();
+    return name || email || 'User';
+  }, [firstName, lastName, email]);
+
+  const avatarUrl = useMemo(() => {
+    const seed = encodeURIComponent(displayName);
+    return `https://api.dicebear.com/7.x/initials/png?seed=${seed}&radius=50&backgroundColor=b6e3f4,c0aede,d1d4f9&fontWeight=700`;
+  }, [displayName]);
 
   function saveFetchedUser(userData) {
     if (!userData) return;
@@ -84,10 +94,9 @@ export default function Profile() {
       };
 
       const { data } = await api.patch('/api/profile/', payload);
-      const updated = data?.user || data || payload;
-      updateUser(updated);
       setSuccess('Profile updated successfully.');
     } catch (e) {
+      console.error(e);
       setError('Failed to update profile.');
     } finally {
       setSaving(false);
@@ -98,6 +107,14 @@ export default function Profile() {
     <div className={styles.container}>
       <h1 className={styles.title}>My Profile</h1>
       <div className={styles.card}>
+        <div className={styles.avatarBox}>
+          <img
+            className={styles.avatarImg}
+            src={avatarUrl}
+            alt={`Avatar for ${displayName}`}
+            loading="lazy"
+          />
+        </div>
         {error && <div className={styles.error}>{error}</div>}
         {success && <div className={styles.success}>{success}</div>}
         <form className={styles.form} onSubmit={onSubmit}>

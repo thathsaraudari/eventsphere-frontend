@@ -89,7 +89,7 @@ export default function CreateEvent() {
     try {
       const { data } = await api.post('/api/events', payload)
       const id = data?._id || data?.id
-      if (id) navigate(`/events/${id}`)
+      if (id) navigate(`/events/${id}`, { state: { from: { name: 'myevents', tab: 'hosting' } } })
       else navigate('/myevents')
     } catch (e) {
       setError(e?.response?.data?.message || e.message || 'Failed to create event')

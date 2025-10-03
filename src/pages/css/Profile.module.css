@@ -9,6 +9,22 @@
     margin-bottom: 1rem;
 }
 
+.avatarBox {
+    display: grid;
+    place-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0 1rem;
+}
+
+.avatarImg {
+    width: 96px;
+    height: 96px;
+    border-radius: 50%;
+    border: 1px solid #e5e7eb;
+    object-fit: cover;
+    background: #f3f4f6;
+}
+
 .card {
     background: #fff;
     border: 1px solid #e5e7eb;

@@ -87,6 +87,27 @@ export default function EventDetail() {
 
   const seatsLeft = event?.capacity?.seatsRemaining ?? null
 
+  function handleBack(e) {
+    if (e) e.preventDefault()
+    const from = location.state?.from
+    if (from?.name === 'myevents') {
+      const tab = from.tab || 'attending'
+      const qs = new URLSearchParams({ tab }).toString()
+      navigate(`/myevents?${qs}`)
+      return
+    }
+    if (from?.name === 'events') {
+      const search = typeof from.search === 'string' ? from.search : ''
+      navigate(`/events${search || ''}`)
+      return
+    }
+    if (window.history.length > 1) {
+      navigate(-1)
+    } else {
+      navigate('/events', { replace: true })
+    }
+  }
+
   async function handleToggleRsvp() {
     if (!token) {
       return navigate('/login', { replace: true, state: { from: location } })
@@ -98,7 +119,6 @@ export default function EventDetail() {
       const { data } = await api.post(`/api/my-events/attending/${id}/rsvp/toggle`);
       if(data?.success) {
         setIsRsvped(data.status === 'reserved')
-        // Update seats remaining in UI
         event.capacity.seatsRemaining = data.seatsRemaining
         setEvent({ ...event })
       } else {
@@ -116,10 +136,8 @@ export default function EventDetail() {
       return navigate('/login', { replace: true, state: { from: location } })
     }
     if (isRsvped) {
-      // For cancellation, open confirmation dialog
       return setConfirmCancelOpen(true)
     }
-    // For new RSVP, open confirmation dialog
     setConfirmOpen(true)
   }
 
@@ -174,12 +192,11 @@ export default function EventDetail() {
   function mapEmbedSrc(location) {
     if (!location) return null;
     const base = 'https://www.google.com/maps';
-    if (location.coords && Array.isArray(location.coords.coordinates)) {
-      const [lng, lat] = location.coords.coordinates;
-      return `${base}?q=${encodeURIComponent(`${lat},${lng}`)}&hl=en&z=14&output=embed`;
-    }
     const a = addressText(location);
-    return a ? `${base}?q=${encodeURIComponent(a)}&hl=en&z=14&output=embed` : null;
+    if (a) {
+      return `${base}?q=${encodeURIComponent(a)}&hl=en&z=14&output=embed`;
+    }
+    return null;
   }
   const capacity = event.capacity.number
   const left = event.capacity.seatsRemaining
@@ -188,7 +205,7 @@ export default function EventDetail() {
   <>
   <div className={styles.eventPage}>
     <div className={styles.container}>
-      <Link to="/" className={styles.backlink}>&larr; Back to events</Link>
+      <button type="button" onClick={handleBack} className={styles.backlink} style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>&larr; Back</button>
     </div>
 
     {event.coverUrl && (
@@ -231,7 +248,6 @@ export default function EventDetail() {
               </section>
             )}
 
-            {/* Additional details (no duplicates with sidebar) */}
             <section style={{ marginTop: 16, display: 'grid', gap: 8, color: '#374151' }}>
               {event.category && (
                 <div>
@@ -258,9 +274,6 @@ export default function EventDetail() {
                 </div>
               )}
             </section>
-
-            {/* Location moved to sidebar map */}
-
             {event.eventMode && event.eventMode !== 'Inperson' && event.onlineUrl && (
               <section style={{ marginTop: 16 }}>
                 <h2 className="h6" style={{ marginBottom: 8 }}>Join link</h2>

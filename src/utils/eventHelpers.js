@@ -52,10 +52,9 @@ export function addressText(location) {
 export function mapLink(location) {
   if (!location) return null;
   const base = 'https://www.google.com/maps/search/?api=1&query=';
-  if (location.coords && Array.isArray(location.coords.coordinates)) {
-    const [lng, lat] = location.coords.coordinates;
-    return `${base}${encodeURIComponent(`${lat},${lng}`)}`;
+  const address = addressText(location);
+  if (address) {
+    return `${base}${encodeURIComponent(address)}`;
   }
-  const addr = addressText(location);
-  return addr ? `${base}${encodeURIComponent(addr)}` : null;
+  return null;
 }
