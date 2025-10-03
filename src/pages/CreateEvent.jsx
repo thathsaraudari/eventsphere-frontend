@@ -88,11 +88,12 @@ export default function CreateEvent() {
     setSubmitting(true)
     try {
       const { data } = await api.post('/api/events', payload)
-      const id = data?._id || data?.id
+      const id = data?._id;
+      //set the navigation state to indicate we come from "hosting" tab of MyEvents page
       if (id) navigate(`/events/${id}`, { state: { from: { name: 'myevents', tab: 'hosting' } } })
       else navigate('/myevents')
     } catch (e) {
-      setError(e?.response?.data?.message || e.message || 'Failed to create event')
+      setError('Failed to create event')
     } finally {
       setSubmitting(false)
     }

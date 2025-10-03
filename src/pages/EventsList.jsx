@@ -64,6 +64,7 @@ export default function EventsList() {
       setLoading(true);
       setError("");
       try {
+        // fetch events from backend
         const { data } = await api.get("/api/events", {
           params: {
             q: query.q || undefined,
@@ -91,7 +92,7 @@ export default function EventsList() {
       ignore = true;
     };
   }, [query.q, query.postalCode, query.category, query.page, query.limit]);
-
+  // calculate the pagination details
   const currentPage = query.page;
   const pageSize = query.limit;
 
@@ -113,6 +114,7 @@ export default function EventsList() {
     }
     setSaveStates((prev) => ({ ...prev, [eventId]: { loading: true, error: '' } }));
     try {
+      // handling saved events
       const idStr = String(eventId);
       if (savedIds.has(idStr)) {
         await api.delete(`/api/saved-events/${eventId}`);
@@ -137,7 +139,6 @@ export default function EventsList() {
 
   return (
     <div className="container py-4">
-      {/* Top hero carousel */}
       <div id="eventsCarousel" className="carousel slide mb-4" data-bs-ride="carousel">
         <div className="carousel-indicators">
           <button type="button" data-bs-target="#eventsCarousel" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
@@ -224,6 +225,7 @@ export default function EventsList() {
           const capTotal = event?.capacity?.number;
           const seatsLeft = event?.capacity?.seatsRemaining;
           const attendeesNow = Math.max(0, capTotal - seatsLeft);
+          // truncate the main description in event list page
           const truncateAtWord = (text, max) => {
             const s = typeof text === 'string' ? text : '';
             if (s.length <= max) return s;

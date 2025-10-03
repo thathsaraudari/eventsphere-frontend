@@ -4,7 +4,7 @@ import { useAuth } from '../context/authContext.jsx';
 import api from '../api/client.js';
 
 export default function Profile() {
-  const { user, updateUser } = useAuth();
+  const { user } = useAuth();
 
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -57,7 +57,7 @@ export default function Profile() {
       setError('');
       try {
         const { data } = await api.get('/api/profile/');
-        const fetched = data?.user || data;
+        const fetched = data?.user;
         if (!active) return;
         saveFetchedUser(fetched);
       } catch (e) {
