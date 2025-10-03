@@ -137,6 +137,69 @@ export default function EventsList() {
 
   return (
     <div className="container py-4">
+      {/* Top hero carousel */}
+      <div id="eventsCarousel" className="carousel slide mb-4" data-bs-ride="carousel">
+        <div className="carousel-indicators">
+          <button type="button" data-bs-target="#eventsCarousel" data-bs-slide-to="0" className="active" aria-current="true" aria-label="Slide 1"></button>
+          <button type="button" data-bs-target="#eventsCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+          <button type="button" data-bs-target="#eventsCarousel" data-bs-slide-to="2" aria-label="Slide 3"></button>
+        </div>
+        <div className="carousel-inner rounded-4 shadow-sm overflow-hidden" style={{ maxHeight: 420 }}>
+          <div className="carousel-item active" data-bs-interval="5000">
+            <img
+              src="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1600&q=80"
+              srcSet="https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=800&q=70 800w, https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1200&q=75 1200w, https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=1600&q=80 1600w"
+              sizes="(max-width: 768px) 100vw, 1600px"
+              className="d-block w-100"
+              alt="People networking at an event"
+              style={{ objectFit: 'cover', height: 420 }}
+              loading="eager"
+            />
+            <div className="carousel-caption d-none d-md-block text-start">
+              <h5 className="fw-semibold">Discover events near you</h5>
+              <p className="mb-0">Workshops, meetups, and more happening this week.</p>
+            </div>
+          </div>
+          <div className="carousel-item" data-bs-interval="5000">
+            <img
+              src="https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=620&auto=format&fit=crop&q=80"
+              srcSet="https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=800&auto=format&fit=crop&q=70 800w, https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=1200&auto=format&fit=crop&q=75 1200w, https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=1600&auto=format&fit=crop&q=80 1600w"
+              sizes="(max-width: 768px) 100vw, 1600px"
+              className="d-block w-100"
+              alt="Conference keynote stage"
+              style={{ objectFit: 'cover', height: 420 }}
+              loading="lazy"
+            />
+            <div className="carousel-caption d-none d-md-block text-start">
+              <h5 className="fw-semibold">Host unforgettable experiences</h5>
+              <p className="mb-0">Create and promote your event in minutes.</p>
+            </div>
+          </div>
+          <div className="carousel-item" data-bs-interval="5000">
+            <img
+              src="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80"
+              srcSet="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=800&q=70 800w, https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=75 1200w, https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80 1600w"
+              sizes="(max-width: 768px) 100vw, 1600px"
+              className="d-block w-100"
+              alt="Crowd at a concert or festival"
+              style={{ objectFit: 'cover', height: 420 }}
+              loading="lazy"
+            />
+            <div className="carousel-caption d-none d-md-block text-start">
+              <h5 className="fw-semibold">Find your community</h5>
+              <p className="mb-0">Join groups that share your interests.</p>
+            </div>
+          </div>
+        </div>
+        <button className="carousel-control-prev" type="button" data-bs-target="#eventsCarousel" data-bs-slide="prev">
+          <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span className="visually-hidden">Previous</span>
+        </button>
+        <button className="carousel-control-next" type="button" data-bs-target="#eventsCarousel" data-bs-slide="next">
+          <span className="carousel-control-next-icon" aria-hidden="true"></span>
+          <span className="visually-hidden">Next</span>
+        </button>
+      </div>
       <div className={styles.pageHead}>
         <div>
           <p className={styles.subtitle}>Discover what’s happening around you and online</p>
