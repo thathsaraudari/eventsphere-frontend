@@ -1,4 +1,4 @@
-// src/pages/EventDetail.jsx
+
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import api from '../api/client.js'
@@ -52,6 +52,7 @@ export default function EventDetail() {
     async function checkRsvp() {
       if (!token || !id) return
       try {
+        // fetch RSVP status from backend
         const { data } = await api.get(`/api/my-events/attending/${id}`)
         if (ignore) return
         setIsRsvped(data?.status === 'reserved')
@@ -68,6 +69,7 @@ export default function EventDetail() {
     async function checkSaved() {
       if (!token || !id) return
       try {
+        // fetch saved status from backend
         const { data } = await api.get('/api/saved-events/')
         if (ignore) return
         const list = data;
@@ -87,13 +89,14 @@ export default function EventDetail() {
 
   const seatsLeft = event?.capacity?.seatsRemaining ?? null
 
+  // Navigate back to the previous page, myEvents or eventList page
   function handleBack(e) {
     if (e) e.preventDefault()
     const from = location.state?.from
     if (from?.name === 'myevents') {
       const tab = from.tab || 'attending'
-      const qs = new URLSearchParams({ tab }).toString()
-      navigate(`/myevents?${qs}`)
+      const queryString = new URLSearchParams({ tab }).toString()
+      navigate(`/myevents?${queryString}`)
       return
     }
     if (from?.name === 'events') {
@@ -101,6 +104,7 @@ export default function EventDetail() {
       navigate(`/events${search || ''}`)
       return
     }
+    // go to previous page if there is no saved "from" state
     if (window.history.length > 1) {
       navigate(-1)
     } else {
@@ -189,6 +193,7 @@ export default function EventDetail() {
   const addr = addressText(event.location)
   const mapsUrl = mapLink(event.location)
 
+  // generate google map embed src url
   function mapEmbedSrc(location) {
     if (!location) return null;
     const base = 'https://www.google.com/maps';
@@ -198,8 +203,6 @@ export default function EventDetail() {
     }
     return null;
   }
-  const capacity = event.capacity.number
-  const left = event.capacity.seatsRemaining
 
   return (
   <>
@@ -337,7 +340,7 @@ export default function EventDetail() {
 
               </div>
 
-              {/* Share (sidebar) */}
+              
               <div style={{ marginTop: 12 }}>
                 <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 6 }}>Share</div>
                 <div className="d-flex flex-wrap gap-2">
@@ -383,7 +386,7 @@ export default function EventDetail() {
                 </div>
               </div>
 
-              {/* Map (sidebar) */}
+              
               {event.eventMode === 'Inperson' && mapEmbedSrc(event.location) && (
                 <div style={{ marginTop: 12 }}>
                   <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 6 }}>Location</div>
@@ -413,6 +416,7 @@ export default function EventDetail() {
       </div>
 
   </div>
+  {/* Confirm dialogs for RSVP and Cancel */}
   {event && (
     <ConfirmDialog
       open={confirmOpen}

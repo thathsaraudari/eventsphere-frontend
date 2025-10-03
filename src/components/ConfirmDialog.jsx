@@ -1,4 +1,3 @@
-// src/components/ConfirmDialog.jsx
 import React from 'react'
 
 const overlayStyle = {
@@ -50,7 +49,7 @@ const btnBase = {
 
 const btnPrimary = {
   ...btnBase,
-  background: '#6b7280', // default muted grey
+  background: '#6b7280',
   borderColor: '#6b7280',
   color: '#fff',
 }

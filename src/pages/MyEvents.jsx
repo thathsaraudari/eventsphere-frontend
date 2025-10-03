@@ -58,7 +58,7 @@ export default function MyEvents() {
       } catch (e) {
         if (!ignore) {
           const baseMsg = activeTab === "hosting" ? "Failed to load hosted events" : "Failed to load attending events";
-          setError(e?.response?.data?.message || e.message || baseMsg);
+          setError(baseMsg);
         }
       } finally {
         if (!ignore) setLoading(false);
@@ -90,7 +90,7 @@ export default function MyEvents() {
     try {
       const { data } = await api.post(`/api/my-events/attending/${eventId}/rsvp/toggle`);
       if (data?.success) {
-        setRsvps((prev) => prev.filter((r) => r?.eventId?._id !== eventId));
+        setRsvps((prev) => prev.filter((r) => r.eventId._id !== eventId));
       }
     } catch (e) {
       console.error('Failed to cancel RSVP', e);
@@ -105,8 +105,8 @@ export default function MyEvents() {
     try {
       await api.delete(`/api/saved-events/${id}`);
       setSavedEvents((prev) => prev.filter((entry) => {
-        const event = entry?.eventId || entry;
-        const eventId = event?._id || event?.id;
+        const event = entry?.eventId;
+        const eventId = event?._id;
         return String(eventId) !== String(id);
       }));
     } catch (e) {

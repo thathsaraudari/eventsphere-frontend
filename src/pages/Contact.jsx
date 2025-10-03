@@ -2,7 +2,8 @@ import { useState } from 'react'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 
 export default function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const initialForm = { name: '', email: '', subject: '', message: '' }
+  const [form, setForm] = useState(initialForm)
   const [thanksOpen, setThanksOpen] = useState(false)
 
   const onChange = (e) => {
@@ -13,6 +14,11 @@ export default function Contact() {
   const onSubmit = (e) => {
     e.preventDefault()
     setThanksOpen(true)
+  }
+
+  const handleCloseThanks = () => {
+    setThanksOpen(false)
+    setForm(initialForm)
   }
 
   return (
@@ -87,7 +93,7 @@ export default function Contact() {
         title="Thank you!"
         cancelText="Close"
         hideConfirm
-        onCancel={() => setThanksOpen(false)}
+        onCancel={handleCloseThanks}
       >
         <div>
           Thank you for contacting us. We received your message and will get back to you soon.

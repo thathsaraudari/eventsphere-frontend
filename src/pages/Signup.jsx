@@ -32,8 +32,7 @@ export default function Signup() {
       const data = await signup({ email, password, username })
 
       
-      const hasToken =
-        data?.accessToken || data?.token || data?.jwt || data?.access_token
+      const hasToken = data?.token
       const hasUser = !!data?.user
 
       if (!hasToken && !hasUser) {
@@ -43,7 +42,7 @@ export default function Signup() {
 
       navigate('/')
     } catch (e) {
-      setError(e?.response?.data?.message || 'Signup failed')
+      setError('Signup failed')
     } finally {
       setLoading(false)
     }

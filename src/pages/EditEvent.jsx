@@ -41,30 +41,30 @@ export default function EditEvent() {
       setStatus('loading')
       setError('')
       try {
-        const [{ data: ev }, { data: ppl }] = await Promise.all([
+        const [{ data: event }, { data: participants }] = await Promise.all([
           api.get(`/api/events/${id}`),
           api.get(`/api/events/${id}/participants`).catch(() => ({ data: [] }))
         ])
         if (ignore) return
-        setTitle(ev?.title || '')
-        setDescription(ev?.description || '')
-        setEventMode(ev?.eventMode || 'Inperson')
-        setCategory(ev?.category || '')
-        setStartAt(ev?.startAt ? toLocalInput(ev.startAt) : '')
-        setEndAt(ev?.endAt ? toLocalInput(ev.endAt) : '')
-        setCoverUrl(ev?.coverUrl || '')
-        setPriceAmount(ev?.price?.amount ?? 0)
-        setPriceCurrency(ev?.price?.currency || 'EUR')
-        setCapacity(ev?.capacity?.number ?? 0)
-        setAddress(ev?.location?.address || '')
-        setCity(ev?.location?.city || '')
-        setPostCode(ev?.location?.postCode || '')
-        setCountry(ev?.location?.country || '')
-        setParticipants(Array.isArray(ppl) ? ppl : (ppl?.list || []))
+        setTitle(event?.title || '')
+        setDescription(event?.description || '')
+        setEventMode(event?.eventMode || 'Inperson')
+        setCategory(event?.category || '')
+        setStartAt(event?.startAt ? toLocalInput(event.startAt) : '')
+        setEndAt(event?.endAt ? toLocalInput(event.endAt) : '')
+        setCoverUrl(event?.coverUrl || '')
+        setPriceAmount(event?.price?.amount ?? 0)
+        setPriceCurrency(event?.price?.currency || 'EUR')
+        setCapacity(event?.capacity?.number ?? 0)
+        setAddress(event?.location?.address || '')
+        setCity(event?.location?.city || '')
+        setPostCode(event?.location?.postCode || '')
+        setCountry(event?.location?.country || '')
+        setParticipants(Array.isArray(participants) ? participants : [])
         setStatus('ready')
       } catch (e) {
         if (!ignore) {
-          setError(e?.response?.data?.message || e.message || 'Failed to load event')
+          setError('Failed to load event')
           setStatus('error')
         }
       }
@@ -112,10 +112,11 @@ export default function EditEvent() {
         }
       }
       await api.patch(`/api/events/${id}`, payload)
+      // set the navigation state to indicate we come from "hosting" tab of MyEvents page
       navigate(`/events/${id}`, { state: { from: { name: 'myevents', tab: 'hosting' } } })
     } catch (e) {
       setStatus('ready')
-      setError(e?.response?.data?.message || e.message || 'Failed to save changes')
+      setError('Failed to save changes')
     }
   }
 
