@@ -192,12 +192,11 @@ export default function EventDetail() {
   function mapEmbedSrc(location) {
     if (!location) return null;
     const base = 'https://www.google.com/maps';
-    if (location.coords && Array.isArray(location.coords.coordinates)) {
-      const [lng, lat] = location.coords.coordinates;
-      return `${base}?q=${encodeURIComponent(`${lat},${lng}`)}&hl=en&z=14&output=embed`;
-    }
     const a = addressText(location);
-    return a ? `${base}?q=${encodeURIComponent(a)}&hl=en&z=14&output=embed` : null;
+    if (a) {
+      return `${base}?q=${encodeURIComponent(a)}&hl=en&z=14&output=embed`;
+    }
+    return null;
   }
   const capacity = event.capacity.number
   const left = event.capacity.seatsRemaining
