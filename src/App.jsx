@@ -13,6 +13,7 @@ import EditEvent from './pages/EditEvent.jsx'
 import About from './pages/About.jsx'
 import Contact from './pages/Contact.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
+import NotFound from './pages/NotFound.jsx'
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/events/:id/edit" element={<RequireAuth><EditEvent /></RequireAuth>} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />

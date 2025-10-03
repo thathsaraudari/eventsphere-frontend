@@ -1,4 +1,4 @@
-// src/pages/EventDetail.jsx
+
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import api from '../api/client.js'
@@ -337,7 +337,7 @@ export default function EventDetail() {
 
               </div>
 
-              {/* Share (sidebar) */}
+              
               <div style={{ marginTop: 12 }}>
                 <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 6 }}>Share</div>
                 <div className="d-flex flex-wrap gap-2">
@@ -383,7 +383,7 @@ export default function EventDetail() {
                 </div>
               </div>
 
-              {/* Map (sidebar) */}
+              
               {event.eventMode === 'Inperson' && mapEmbedSrc(event.location) && (
                 <div style={{ marginTop: 12 }}>
                   <div style={{ color: '#6b7280', fontSize: 13, marginBottom: 6 }}>Location</div>
