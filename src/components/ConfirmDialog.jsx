@@ -72,6 +72,8 @@ export default function ConfirmDialog({
   onCancel,
   confirmDisabled = false,
   variant = 'default', // 'default' | 'success' | 'danger'
+  hideConfirm = false,
+  hideCancel = false,
 }) {
   if (!open) return null
 
@@ -103,10 +105,14 @@ export default function ConfirmDialog({
         <div style={headerStyle} id="confirm-title">{title}</div>
         <div style={bodyStyle}>{children}</div>
         <div style={footerStyle}>
-          <button type="button" onClick={onCancel} style={btnGhost}> {cancelText} </button>
-          <button type="button" onClick={onConfirm} style={confirmStyle} disabled={confirmDisabled}>
-            {confirmText}
-          </button>
+          {!hideCancel && (
+            <button type="button" onClick={onCancel} style={btnGhost}> {cancelText} </button>
+          )}
+          {!hideConfirm && (
+            <button type="button" onClick={onConfirm} style={confirmStyle} disabled={confirmDisabled}>
+              {confirmText}
+            </button>
+          )}
         </div>
       </div>
     </div>
