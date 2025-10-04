@@ -4,7 +4,7 @@
 🔗 **Live App** → [https://eventsphere-dev.netlify.app](https://eventsphere-dev.netlify.app)  
 💻 **Frontend Repo** → [eventsphere-frontend](https://github.com/thathsaraudari/eventsphere-frontend)  
 🛠️ **Backend Repo** → [eventsphere-backend](https://github.com/thathsaraudari/eventsphere-backend)  
-📝 **Slides** → [https://docs.google.com/presentation/d/1eTN8rQKX_muR9d9DUKgcrgkmVDLUpeXF/edit?usp=sharing&ouid=114893619179940410310&rtpof=true&sd=true]
+📝 **Slides** → [slides-link](https://docs.google.com/presentation/d/1eTN8rQKX_muR9d9DUKgcrgkmVDLUpeXF/edit?usp=sharing&ouid=114893619179940410310&rtpof=true&sd=true)
 
 ---
 
@@ -195,4 +195,5 @@ timestamps
 - 🌐 **Live App** — [https://eventsphere-dev.netlify.app](https://eventsphere-dev.netlify.app)  
 - 💻 **Frontend Repo** — [eventsphere-frontend](https://github.com/thathsaraudari/eventsphere-frontend)  
 - 🛠️ **Backend Repo** — [eventsphere-backend](https://github.com/thathsaraudari/eventsphere-backend)  
-- 📝 **Slides** — [https://docs.google.com/presentation/d/1eTN8rQKX_muR9d9DUKgcrgkmVDLUpeXF/edit?usp=sharing&ouid=114893619179940410310&rtpof=true&sd=true]
+- 📝 **Slides** — [slides-link](https://docs.google.com/presentation/d/1eTN8rQKX_muR9d9DUKgcrgkmVDLUpeXF/edit?usp=sharing&ouid=114893619179940410310&rtpof=true&sd=true)
+
